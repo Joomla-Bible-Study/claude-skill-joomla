@@ -8,6 +8,9 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ## [Unreleased]
 
+### Added
+- `CONTRIBUTING.md` covering testing flow, authoring guidelines, PR process, issue guidelines, and versioning.
+
 ## [0.1.0] — 2026-04-29
 
 ### Added

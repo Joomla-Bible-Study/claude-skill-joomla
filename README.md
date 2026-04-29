@@ -98,7 +98,14 @@ Patterns are derived from the [joomla-cms](https://github.com/joomla/joomla-cms)
 
 ## Contributing
 
-Issues and PRs welcome. If you spot a Joomla 6 API change, an outdated pattern, or have an additional reference to contribute, open an issue first to discuss.
+Issues and PRs welcome. See **[CONTRIBUTING.md](CONTRIBUTING.md)** for:
+
+- what kinds of contributions are most useful (bug reports, API drift, new patterns/references)
+- how to test changes locally before opening a PR (symlink as a skill, install as a plugin, or upload zip to Claude.ai)
+- authoring guidelines for `SKILL.md` and references (frontmatter is load-bearing — be deliberate)
+- versioning, CHANGELOG expectations, and the release flow
+
+Quick rule of thumb: if you spot a Joomla 6 API change or an outdated pattern, file an issue with the prompt + the bad response and we'll work from there.
 
 ## License
 
