@@ -1,0 +1,60 @@
+name: Feature / coverage request
+description: Suggest a Joomla scenario the skill should handle better, or a new pattern/reference to add.
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the **Joomla scenario** you want better support for, not how the skill should be edited. Concrete examples beat abstractions.
+
+  - type: textarea
+    id: scenario
+    attributes:
+      label: The Joomla scenario
+      description: What were you trying to build? What's the extension type (component, module, plugin, template, library, CLI)?
+      placeholder: |
+        e.g. "I'm writing a system plugin that subscribes to onAfterRoute and conditionally redirects based on user group."
+    validations:
+      required: true
+
+  - type: textarea
+    id: example_prompt
+    attributes:
+      label: Example prompt
+      description: A prompt the skill should handle well after this change.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What good guidance looks like
+      description: What patterns, classes, files, or APIs should Claude reach for? Links to joomla-cms or working extensions help.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Where do you think this guidance belongs?
+      options:
+        - SKILL.md (top-level guidance)
+        - references/component.md
+        - references/module.md
+        - references/plugin.md
+        - references/library.md
+        - New reference file (specify in description)
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds
+      description: How are you currently working around this gap?
+    validations:
+      required: false

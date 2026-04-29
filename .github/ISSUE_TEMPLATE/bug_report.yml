@@ -1,0 +1,83 @@
+name: Bug report
+description: Claude gave bad, outdated, or wrong Joomla advice that came from this skill.
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. The most useful reports include the exact prompt and Claude's exact response so we can reproduce the failure.
+
+  - type: textarea
+    id: prompt
+    attributes:
+      label: Prompt
+      description: The exact prompt (or sequence of prompts) you gave Claude.
+      placeholder: |
+        e.g. "Add a new view to my Joomla 6 component called Reports"
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: response
+    attributes:
+      label: Claude's response
+      description: Paste the part of Claude's response that was wrong, misleading, or outdated. Trim to the relevant section.
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: What should Claude have said or done? If you have a reference (Joomla docs, joomla-cms commit, working code), link it.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install_path
+    attributes:
+      label: Install path
+      description: How is the skill installed in your Claude?
+      options:
+        - Claude Code plugin (`/plugin install joomla@joomla-bible-study`)
+        - Claude Code manual copy into ~/.claude/skills/
+        - Claude.ai consumer app (uploaded zip)
+        - Other / not sure
+    validations:
+      required: true
+
+  - type: input
+    id: skill_version
+    attributes:
+      label: Skill version
+      description: From the release tag, plugin metadata, or `~/.claude/plugins/cache/joomla-bible-study/...` path.
+      placeholder: e.g. v0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: claude_product
+    attributes:
+      label: Claude product / version
+      description: e.g. Claude Code 2.x CLI, Claude Code Desktop, Claude.ai web, Claude.ai Mac app. Include a version if you have one.
+    validations:
+      required: false
+
+  - type: input
+    id: joomla_version
+    attributes:
+      label: Joomla version (if relevant)
+      description: e.g. 5.2.3, 6.0-dev. Only needed if the bug is version-specific.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Logs, screenshots, hunches about which section of SKILL.md or which reference is at fault.
+    validations:
+      required: false

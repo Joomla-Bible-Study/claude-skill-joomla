@@ -141,7 +141,7 @@ Maintainers cut releases by tagging (`git tag -a v0.2.0 -m "..."` then push). Th
 
 ## Code of conduct
 
-Be kind, focused, and professional. Critique the work, not the person. Disagreements about Joomla patterns are fine; cite sources.
+This project follows a [Code of Conduct](CODE_OF_CONDUCT.md) based on the Contributor Covenant. The short version: be kind, focused, and professional; critique the work, not the person; disagreements about Joomla patterns are welcome — cite sources.
 
 ## License
 

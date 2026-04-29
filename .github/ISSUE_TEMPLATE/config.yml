@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Joomla extension code question
+    url: https://forum.joomla.org/
+    about: Questions about how to use Joomla itself (not the skill) belong on the Joomla Forum.
+  - name: Joomla CMS bug
+    url: https://github.com/joomla/joomla-cms/issues
+    about: Bugs in the Joomla CMS core belong in the joomla-cms repo, not here.

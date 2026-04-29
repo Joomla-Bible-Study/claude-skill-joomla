@@ -10,6 +10,10 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ### Added
 - `CONTRIBUTING.md` covering testing flow, authoring guidelines, PR process, issue guidelines, and versioning.
+- `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, summarized + linked).
+- Issue forms: `.github/ISSUE_TEMPLATE/bug_report.yml` and `feature_request.yml`, plus `config.yml` redirecting Joomla-CMS questions to upstream.
+- `scripts/validate.sh` — structural lints for SKILL.md frontmatter, reference resolution, and `marketplace.json` source paths.
+- `.github/workflows/validate.yml` — runs the validation script on every push to `main` and every PR.
 
 ## [0.1.0] — 2026-04-29
 
