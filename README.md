@@ -1,6 +1,8 @@
-# Joomla Skill for Claude Code
+# Joomla Skill for Claude
 
-A [Claude Code](https://claude.com/claude-code) skill for building **Joomla 5+ and Joomla 6** extensions — components, modules, plugins, and templates — using modern MVC architecture, PSR-4 namespaces, dependency injection, and service providers.
+A skill for building **Joomla 5+ and Joomla 6** extensions — components, modules, plugins, and templates — using modern MVC architecture, PSR-4 namespaces, dependency injection, and service providers.
+
+Works with [Claude Code](https://claude.com/claude-code) (as a plugin) and with [Claude.ai](https://claude.ai) (as an uploadable Skill).
 
 ## What this skill covers
 
@@ -31,25 +33,43 @@ Reference files in `skills/joomla/references/` provide deep-dive guidance for ea
 
 ## Installation
 
-### Option 1 — Install as a Claude Code plugin (recommended)
+There are three install paths depending on which Claude product you use.
 
-In Claude Code:
+### Option 1 — Claude Code plugin (recommended for Claude Code users)
+
+Inside Claude Code (CLI, desktop app, or IDE extension):
 
 ```
 /plugin marketplace add Joomla-Bible-Study/claude-skill-joomla
 /plugin install joomla@joomla-bible-study
+/reload-plugins
 ```
 
-### Option 2 — Manual install
+The skill becomes available as `joomla:joomla` and updates with `/plugin update`.
 
-Clone the repo and copy the skill into your Claude Code skills directory:
+### Option 2 — Claude.ai consumer app (web, Mac, Windows desktop)
+
+The Claude.ai chat app does not load Claude Code plugins, but it does support uploading skills as a zip file.
+
+1. Open the [latest release](https://github.com/Joomla-Bible-Study/claude-skill-joomla/releases/latest).
+2. Download the `joomla-skill-vX.Y.Z.zip` asset.
+3. In Claude.ai, go to [Settings → Capabilities](https://claude.ai/settings/capabilities) (or in the desktop app: profile menu → **Settings** → **Capabilities**).
+4. Find the **Skills** section and choose **Create skill** / **Upload skill**.
+5. Drop in the zip. Claude reads the `name` and `description` from `SKILL.md`'s frontmatter.
+6. Toggle the skill on for any Project (or globally) where you want it active.
+
+To get the most out of the skill in Claude.ai, enable the **Code execution / Analysis** tool for the conversation so Claude can generate scaffolded files as downloadable artifacts. Pair it with a Project that holds your component source for richer context.
+
+### Option 3 — Manual copy into `~/.claude/skills/` (Claude Code, no plugin)
+
+If you'd rather not use the plugin system:
 
 ```bash
 git clone https://github.com/Joomla-Bible-Study/claude-skill-joomla.git
 cp -R claude-skill-joomla/skills/joomla ~/.claude/skills/
 ```
 
-Or symlink so you can pull updates with `git pull`:
+Or symlink so updates flow in with `git pull`:
 
 ```bash
 ln -s "$PWD/claude-skill-joomla/skills/joomla" ~/.claude/skills/joomla

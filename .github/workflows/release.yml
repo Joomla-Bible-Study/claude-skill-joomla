@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v0.1.0)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "name=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate skill structure
+        run: |
+          test -f skills/joomla/SKILL.md || { echo "::error::skills/joomla/SKILL.md missing"; exit 1; }
+          head -1 skills/joomla/SKILL.md | grep -q '^---$' || { echo "::error::SKILL.md missing YAML frontmatter"; exit 1; }
+
+      - name: Build skill zip
+        id: zip
+        run: |
+          tag="${{ steps.tag.outputs.name }}"
+          out="joomla-skill-${tag}.zip"
+          (cd skills && zip -r "../${out}" joomla -x "*.DS_Store" "*/.DS_Store")
+          ls -lh "${out}"
+          echo "file=${out}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.name }}
+          name: ${{ steps.tag.outputs.name }}
+          generate_release_notes: true
+          files: ${{ steps.zip.outputs.file }}
+          body: |
+            **Install in Claude Code:**
+            ```
+            /plugin marketplace add Joomla-Bible-Study/claude-skill-joomla
+            /plugin install joomla@joomla-bible-study
+            /reload-plugins
+            ```
+
+            **Install in Claude.ai (consumer app):**
+            Download `${{ steps.zip.outputs.file }}` below, then upload at https://claude.ai/settings/capabilities → Skills → Create skill.
+
+            See [README](https://github.com/Joomla-Bible-Study/claude-skill-joomla#readme) for full instructions.
