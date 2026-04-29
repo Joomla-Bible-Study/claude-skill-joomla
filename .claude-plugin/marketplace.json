@@ -1,0 +1,17 @@
+{
+  "name": "joomla-bible-study",
+  "owner": {
+    "name": "Joomla Bible Study / Christian Web Ministries",
+    "url": "https://github.com/Joomla-Bible-Study"
+  },
+  "plugins": [
+    {
+      "name": "joomla",
+      "source": ".",
+      "description": "Joomla 5+ / 6 extension development skill — components, modules, plugins, templates with modern MVC, PSR-4 namespaces, DI, and service providers.",
+      "version": "0.1.0",
+      "category": "development",
+      "tags": ["joomla", "php", "cms"]
+    }
+  ]
+}
