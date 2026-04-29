@@ -14,6 +14,10 @@ All notable changes to the Joomla skill are documented here. The format follows 
 - Issue forms: `.github/ISSUE_TEMPLATE/bug_report.yml` and `feature_request.yml`, plus `config.yml` redirecting Joomla-CMS questions to upstream.
 - `scripts/validate.sh` — structural lints for SKILL.md frontmatter, reference resolution, and `marketplace.json` source paths.
 - `.github/workflows/validate.yml` — runs the validation script on every push to `main` and every PR.
+- `develop` branch as the integration target; `main` is now release-only.
+
+### Changed
+- `marketplace.json` now uses an explicit GitHub object source pinned to `v0.1.0` (`{"source":"github","repo":"...","ref":"v0.1.0"}`) instead of a relative `./` path. This means `/plugin update` only delivers a new version once the `ref` is bumped on `main`, so audit work in progress on `develop` doesn't reach end users prematurely.
 
 ## [0.1.0] — 2026-04-29
 

@@ -106,16 +106,23 @@ Roughly: SKILL.md is the cost-paid-on-every-load file. Keep it focused. If a top
 
 There's no enforced limit, but the smaller and sharper SKILL.md stays, the better the skill performs.
 
+## Branching model
+
+- **`main`** — release branch. Only updated via release PRs from `develop` (or hotfix branches). Every commit on `main` should correspond to a tagged release. The plugin marketplace pins users to a tagged version (see *Versioning and releases* below), so `main` is what version-pinned consumers see.
+- **`develop`** — integration branch. All ongoing work lands here. Feature branches are cut from `develop` and merged back into it.
+- **Feature branches** — short-lived, one logical change per branch, named `feat/<topic>`, `fix/<topic>`, `docs/<topic>`, or `chore/<topic>`.
+
 ## Pull request process
 
-1. **Branch from `main`.** Use a short, descriptive branch name (`feat/template-reference`, `fix/joomla6-form-field`, `docs/clarify-wam`).
+1. **Branch from `develop`.** Use a short, descriptive name (`feat/template-reference`, `fix/joomla6-form-field`, `docs/clarify-wam`).
 2. **One logical change per PR.** Mixing a content rewrite with a workflow fix makes review harder than it needs to be.
-3. **Update `CHANGELOG.md`.** Move your bullet under `[Unreleased]`. Use Keep-a-Changelog sections (`### Added`, `### Changed`, `### Fixed`, `### Removed`).
-4. **Open the PR with**:
+3. **Target `develop` in your PR**, not `main`.
+4. **Update `CHANGELOG.md`.** Move your bullet under `[Unreleased]`. Use Keep-a-Changelog sections (`### Added`, `### Changed`, `### Fixed`, `### Removed`).
+5. **Open the PR with**:
    - what changed and why,
    - any prompts you tested with and what Claude did before/after,
    - a note if you changed the frontmatter (since that affects every existing user).
-5. **A maintainer will install the branch and test it** against representative prompts before merging.
+6. **A maintainer will install the branch and test it** against representative prompts before merging.
 
 ## Issue guidelines
 
@@ -137,7 +144,18 @@ We use [Semantic Versioning](https://semver.org/) where the SKILL.md content is 
 - **Minor (`v0.2.0`)** — new guidance, new references, expanded coverage.
 - **Major (`v1.0.0`)** — sections removed or restructured in a way that changes how someone uses the skill, or a breaking frontmatter change.
 
-Maintainers cut releases by tagging (`git tag -a v0.2.0 -m "..."` then push). The release workflow auto-builds the upload-ready zip and attaches it.
+### How a release is cut (maintainers)
+
+1. Open a release PR from `develop` → `main` titled `Release vX.Y.Z`.
+2. On the PR branch, in one commit:
+   - Move all `[Unreleased]` notes in `CHANGELOG.md` into a new `[X.Y.Z] — YYYY-MM-DD` section.
+   - Bump `version` in `.claude-plugin/plugin.json`.
+   - Bump `version` and the `source.ref` (`vX.Y.Z`) in `.claude-plugin/marketplace.json`.
+3. Merge the PR into `main`.
+4. Tag the merge commit: `git tag -a vX.Y.Z -m "vX.Y.Z — <summary>" && git push origin vX.Y.Z`.
+5. The release workflow builds `joomla-skill-vX.Y.Z.zip` and attaches it to a GitHub Release with auto-generated notes.
+
+The marketplace pin means existing users only see the new version after step 4 lands — `main` HEAD is the source of truth for "what version is current."
 
 ## Code of conduct
 
