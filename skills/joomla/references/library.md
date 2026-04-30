@@ -2,6 +2,19 @@
 
 Libraries are shared PHP code packages installed under `libraries/` that any other extension can use. They're ideal for utility classes, API wrappers, data processing logic, or any code shared across your component, plugins, and modules.
 
+## Table of Contents
+1. [When to Use a Library](#when-to-use-a-library)
+2. [Directory Structure](#directory-structure)
+3. [Manifest XML](#manifest-xml) — universal elements in [`manifest.md`](manifest.md)
+4. [Library PHP Classes](#library-php-classes)
+5. [Using Library Classes in Other Extensions](#using-library-classes-in-other-extensions)
+6. [Language Files](#language-files) — full conventions in [`language-files.md`](language-files.md)
+7. [Versioning & Updates](#versioning--updates)
+8. [Install Script (Optional)](#install-script-optional) — full walkthrough in [`install-script.md`](install-script.md)
+9. [Packaging a Library](#packaging-a-library)
+10. [Including Libraries in a Package Extension](#including-libraries-in-a-package-extension)
+11. [Multiple Libraries Under a Vendor](#multiple-libraries-under-a-vendor)
+
 ## When to Use a Library
 
 - Shared code consumed by multiple extensions (e.g., a helper used by both your component and your plugins)
@@ -34,6 +47,10 @@ When installed, Joomla copies the contents of `libraries/mylib/` to `<joomla_roo
 **Important:** Never use `libraries/vendor/` as your library directory — that path is reserved by Joomla's core Composer autoloader.
 
 ## Manifest XML
+
+For the **universal** manifest elements (`<extension>` root attributes, the metadata block, `<files>`, `<media>`, `<languages>`, `<scriptfile>`, `<update>` / `<updateservers>`) see [`references/manifest.md`](manifest.md). What's specific to libraries is the `<libraryname>` element (the install-path key under `libraries/`) and the `<files folder="libraries/<libraryname>">` mapping. Library manifests rarely use `<media>` (libraries are PHP, not assets) or `<install><sql>` (libraries usually have no schema).
+
+(Element-handling verified against [`LibraryAdapter` on `joomla-cms` `6.1-dev`](https://github.com/joomla/joomla-cms/blob/6.1-dev/libraries/src/Installer/Adapter/LibraryAdapter.php) — it parses `<libraryname>`, `<files>`, `<languages>`, `<media>`, and the `<scriptfile>`-driven `manifest_script`.)
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -188,15 +205,35 @@ The `addfieldprefix` attribute tells Joomla where to look for the custom field c
 
 ## Language Files
 
-Library language files follow the same INI format as other extensions:
+Libraries use the `LIB_<ELEMENT>_*` key prefix. The full naming, file-location, and JS-registration conventions are **shared across all extension types** — see [`references/language-files.md`](language-files.md). Library-specific reminders:
+
+- Most libraries ship **only `.sys.ini`** (loaded by the installer + Extensions list), because libraries are pure PHP code with no UI of their own. Add a runtime `.ini` only if your library actually emits user-facing strings (e.g., from an exception message that surfaces in another extension's view).
+- Source-tree filename uses the locale prefix: `library_root/language/en-GB/en-GB.lib_mylib.sys.ini`. Example minimal contents:
 
 ```ini
-; language/en-GB/lib_mylib.sys.ini
 LIB_MYLIB="My Library"
 LIB_MYLIB_XML_DESCRIPTION="Shared utility library for My Project extensions."
 ```
 
-Library language files are typically `.sys.ini` only (shown in the admin extensions list), unless the library provides frontend UI elements.
+## Versioning & Updates
+
+Libraries follow the same `<version>` + `<updateservers>` flow as other extension types — see [`manifest.md`](manifest.md) § "`<update>` and `<updateservers>`" for the universal update-XML schema and the `<targetplatform>` regex.
+
+Library-specific notes:
+
+- **No `<schemas>` for libraries.** The `<update><schemas>` block (per-version `sql/updates/<driver>/X.Y.Z.sql`) is a component pattern; libraries don't carry a `#__schemas` row and have nothing to migrate at the SQL layer. If your library wraps a service that needs schema state, register the schemas on the **consuming component**, not the library.
+- **PHP-level migrations** (e.g., a constant rename across versions of your library API) belong in the consuming extension's install script, not the library itself. Libraries are best treated as immutable code drops keyed by `<version>`; semver-bump changes to the library's public surface and let dependents `composer update`-style move forward.
+- **`<targetplatform>` regex** — pick the Joomla version range your library supports. For Joomla 6.x-only code use `version="6\.[0-9]+"`; for J5+J6 dual-support use `version="(5|6)\.[0-9]+"`.
+
+## Install Script (Optional)
+
+Libraries **rarely** need a `<scriptfile>`. The default flow — copy files to `libraries/<libraryname>/`, register the namespace, done — covers most cases. Add a script only when you need to:
+
+- Pre-create a runtime data directory the library will write to.
+- Verify a system-level dependency Joomla doesn't enforce (e.g., a PHP extension your library binds against).
+- Clean up persistent state on uninstall (rare; libraries usually have none).
+
+The lifecycle hooks (`preflight` / `install` / `update` / `postflight` / `uninstall`) and the script-class naming convention (`Lib<Element>InstallerScript`, e.g., `LibMyLibInstallerScript`) follow the **shared** pattern documented in [`references/install-script.md`](install-script.md). Libraries pass the same `InstallerAdapter` to each hook; the only difference from the component case is that there's no MVC scaffolding or schema runner to coordinate with.
 
 ## Packaging a Library
 

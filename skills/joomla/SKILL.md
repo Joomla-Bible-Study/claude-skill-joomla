@@ -1,7 +1,7 @@
 ---
 name: joomla
 description: |
-  Joomla 5+ extension development skill for building components, modules, plugins, and templates using modern Joomla MVC architecture with PSR-4 namespaces, dependency injection, and service providers. Use this skill whenever the user mentions Joomla extension development, Joomla components, Joomla modules, Joomla plugins, Joomla templates, Joomla MVC, provider.php, Joomla manifest XML, Joomla 5, Joomla 6, or any work involving Joomla CMS extension code. This skill covers scaffolding new extensions, adding views/models/controllers, writing service providers, creating manifest files, database migrations, language files, custom form fields, plugin event subscribers, module dispatchers, and web asset management. Even if the user just says "add a new view" or "create a controller" in a Joomla project context, use this skill. Also trigger for any Joomla-based project regardless of domain — church software, e-commerce, directories, booking systems, or any custom component.
+  Joomla 5+ extension development skill for building components, modules, plugins, libraries, and templates using modern Joomla MVC architecture with PSR-4 namespaces, dependency injection, and service providers. Use this skill whenever the user mentions Joomla extension development, Joomla components, Joomla modules, Joomla plugins, Joomla libraries, Joomla templates, Joomla MVC, provider.php, Joomla manifest XML, Joomla install script, scriptfile, Joomla CMS, Joomla 5, Joomla 5.4, Joomla 6, Joomla 6.1, Joomla 6.2, Joomla 7, or the J5 / J6 / J7 shorthands, or any work involving Joomla CMS extension code. This skill covers scaffolding new extensions, adding views/models/controllers, writing service providers, creating manifest files, install/uninstall scripts, database migrations, language files, custom form fields, layout overrides and template overrides, plugin event subscribers (`SubscriberInterface` and `CMSPlugin`), module dispatchers, the Web Asset Manager (WAM, `joomla.asset.json`, `useScript` / `useStyle`), task plugins / scheduled tasks, webservices plugins / Joomla JSON:API endpoints, finder plugins / search adapters, schemaorg plugins, and SEF router contracts (`RouterServiceInterface` + `RouterFactory`). Even if the user just says "add a new view", "create a controller", "register web assets", "write an install script", or "override a layout" in a Joomla project context, use this skill. Also trigger for any Joomla-based project regardless of domain — church software, e-commerce, directories, booking systems, or any custom component.
 ---
 
 # Joomla 5+ Extension Development
@@ -9,7 +9,7 @@ description: |
 This skill guides you through building Joomla 5+ extensions (components, modules, plugins) using modern architecture patterns derived from the [joomla-cms](https://github.com/joomla/joomla-cms) core and real-world production components.
 
 **Target:** Natively Joomla 6, backward compatible with Joomla 5 (no backward compatibility plugin required)
-**PHP requirement:** 8.2+ (Joomla 6 minimum), 8.3+ recommended
+**PHP requirement (Joomla 6.x):** 8.3+ minimum and supported, 8.4 recommended ([source](https://manual.joomla.org/docs/get-started/technical-requirements/))
 **Coding standard:** PSR-12 (PHP), Joomla ESLint config (JavaScript)
 
 ## Canonical sources
@@ -18,17 +18,24 @@ When a Joomla pattern is non-obvious, ambiguous, or might have drifted between v
 
 **Primary — source of truth for runtime behavior:**
 
-- [`github.com/joomla/joomla-cms`](https://github.com/joomla/joomla-cms) — core CMS. Use branch `5.3-dev` for current Joomla 5, `6.0-dev` for Joomla 6 work.
-  - Frontend component examples: [`components/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/components)
-  - Backend component examples: [`administrator/components/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/administrator/components)
-  - Core plugins: [`plugins/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/plugins)
-  - Core modules: [`modules/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/modules) and [`administrator/modules/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/administrator/modules)
-  - Framework libraries shipped with the CMS: [`libraries/src/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/libraries/src)
+- [`github.com/joomla/joomla-cms`](https://github.com/joomla/joomla-cms) — core CMS. **Active dev branches** (verified 2026-04-30, after J6.1 release):
+  - `6.1-dev` — current released J6 line, in patch maintenance. **Default reference for new J6 code.**
+  - `6.2-dev` — next J6 minor in development.
+  - `5.4-dev` — current released J5 line.
+  - `7.0-dev` — next major in development. Where deprecations land for removal (e.g., the `CMSPlugin::__construct(DispatcherInterface, …)` deprecation slated for removal here — see `references/plugin.md`).
+  
+  Pick the branch matching the target Joomla version for the code you're verifying. Re-check [`/branches`](https://github.com/joomla/joomla-cms/branches) periodically — Joomla cuts new minor branches frequently and the names above will drift.
+  - Frontend component examples: [`components/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/components)
+  - Backend component examples: [`administrator/components/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/administrator/components)
+  - Core plugins: [`plugins/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/plugins)
+  - Core modules: [`modules/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/modules) and [`administrator/modules/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/administrator/modules)
+  - Framework libraries shipped with the CMS: [`libraries/src/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/libraries/src)
 - [`github.com/joomla-framework`](https://github.com/joomla-framework) — standalone Framework packages (DI, Event, Filesystem, etc.) reused by the CMS.
 
 **Documentation:**
 
 - [manual.joomla.org](https://manual.joomla.org/) — current Developer Manual (Joomla 5+). Preferred prose reference.
+  - Source repo: [`github.com/joomla/Manual`](https://github.com/joomla/Manual) (default branch `main`) — the Markdown backing the rendered site. Useful when you need to grep, fetch raw, or cite a permalink to a specific page; manual edits / corrections also go here as PRs.
 - [api.joomla.org](https://api.joomla.org/) — generated API reference (classes, methods, signatures).
 - [framework.joomla.org](https://framework.joomla.org/) — Joomla Framework package docs.
 - [docs.joomla.org](https://docs.joomla.org/) — **legacy wiki**. Useful for historical context (J3/J4) but often stale for J5/J6; cross-check against `joomla-cms` HEAD before quoting.
@@ -216,6 +223,19 @@ For detailed patterns of each type, read the appropriate reference file:
 - `references/plugin.md` — Plugin event subscriber pattern
 - `references/library.md` — Library structure and packaging
 
+Cross-cutting references (loaded on demand):
+- `references/editor-api.md` — WYSIWYG editor JS/PHP API + XTD buttons
+- `references/form-fields.md` — Built-in field types + custom field authoring
+- `references/testing.md` — PHPUnit + Jest patterns with real Joomla CMS classes
+- `references/gotchas.md` — Hard-won J5/J6 pitfalls (controllers, routing, WAM, dark mode, etc.)
+
+Shared cross-extension references (linked from the per-type files above):
+- `references/manifest.md` — Universal manifest elements (`<extension>` root, metadata, `<files>`, `<media>`, `<languages>`, `<scriptfile>`, `<update>` / `<updateservers>`)
+- `references/install-script.md` — Lifecycle hooks (`preflight`/`install`/`update`/`postflight`/`uninstall`) shared by component/module/plugin/library
+- `references/language-files.md` — Filename conventions, key prefixes per type, plurals, `Text::script()` JS registration
+- `references/service-provider.md` — `ServiceProviderInterface` pattern + per-type binding table (component/module/plugin)
+- `references/component-router.md` — Router class + `RouterServiceInterface` + `RouterFactory` 3-part contract and SEF rules
+
 ## Core Architecture Principles
 
 ### 1. PSR-4 Namespaces (Everything Lives in src/)
@@ -255,7 +275,7 @@ Case sensitivity matters on Linux. Directory names and class names must match ex
 
 ### 2. Service Provider (The Modern Entry Point)
 
-Every extension has `services/provider.php` — this is how Joomla discovers and bootstraps the extension through its DI container.
+Every extension has `services/provider.php` — this is how Joomla discovers and bootstraps the extension through its DI container. The wrapping pattern (`ServiceProviderInterface` + anonymous class + `register()`) is shared across components, modules, and plugins; for the universal pattern, the per-type binding table, and the common DI pitfalls see [`references/service-provider.md`](references/service-provider.md). The example below is the **component** flavor — it registers `MVCFactory`, `ComponentDispatcherFactory`, `RouterFactory`, and (when applicable) `CategoryFactory`, then binds `ComponentInterface`.
 
 **Component service provider pattern:**
 ```php
@@ -330,7 +350,7 @@ This is critical. Code must work natively on Joomla 6 WITHOUT the "Behaviour - B
 | `CMSObject` properties via `->get()` / `->set()` | `getItem()` returns `stdClass` in J6 | Direct property access: `$item->title` |
 | `Factory::getUser()` | Deprecated | `$this->getCurrentUser()` or `$this->getIdentity()` |
 | `getSession()->get('user')` | Use identity methods | `$this->getIdentity()` |
-| `getError()` / `setError()` | Use exceptions | Throw `\RuntimeException` |
+| `getError()` / `setError()` on **models** (`BaseDatabaseModel`) | Use exceptions | Throw `\RuntimeException` |
 | `new ClassName()` for models | Hard-coded dependencies | `$this->getMVCFactory()->createModel()` |
 | `jimport()` | Removed | PSR-4 autoloading |
 | `CMSObject` class | Deprecated, removed in J7 | `stdClass` or custom classes |
@@ -498,9 +518,9 @@ Joomla has strict naming that connects everything automatically:
 | Edit template | `tmpl/{entity}/edit.php` | `tmpl/booking/edit.php` |
 | List template | `tmpl/{entity}s/default.php` | `tmpl/bookings/default.php` |
 
-Some projects use a prefix on entity names (e.g., `CwmBooking` for CWM components). This is optional but helps avoid naming collisions with other extensions.
+Some projects use a vendor prefix on entity names (e.g., `AcmeBooking` instead of plain `Booking`). This is optional but helps avoid naming collisions with other extensions.
 
-The view name in the URL (`&view=cwmmessages`) must match the View directory name (case-insensitive on the URL side, but the directory must match the class namespace).
+The view name in the URL (e.g., `&view=bookings`) must match the View directory name (case-insensitive on the URL side, but the directory must match the class namespace).
 
 ### 7. Database Patterns
 
@@ -534,6 +554,8 @@ ALTER TABLE `#__mycomponent_items` ADD COLUMN `description` text NOT NULL DEFAUL
 Version-numbered files are executed sequentially during updates.
 
 ### 8. Language Files
+
+The filename / key-prefix / plural / `Text::script()` JS-registration conventions are **shared across every extension type** (component / module / plugin / library); the full reference lives in [`references/language-files.md`](references/language-files.md). The example below uses the **component** prefix (`COM_`); modules use `MOD_`, plugins `PLG_<GROUP>_<ELEMENT>_`, libraries `LIB_`.
 
 **Format:** INI files with `COMPONENT_PREFIX_KEY="Value"` pattern.
 
@@ -588,7 +610,7 @@ $wa->useScript('com_mycomponent.admin.script');
 
 ### 10. Manifest XML
 
-Read `references/component.md` for the full manifest template. Key elements:
+For the **universal** manifest elements (`<extension>` root attributes, metadata, `<files>`, `<media>`, `<languages>`, `<scriptfile>`, `<update>` / `<updateservers>`) read [`references/manifest.md`](references/manifest.md). For the **component-specific** template (the `<install>` SQL block, `<update><schemas>`, the `<administration>` block with `<menu>` / `<submenu>`) read [`references/component.md`](references/component.md). Key elements:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -687,7 +709,7 @@ Joomla displays changelogs in the Extensions → Manage view, linked per version
             <item>Removed legacy import format</item>
         </remove>
         <note>
-            <item>Requires PHP 8.2+</item>
+            <item>Requires PHP 8.3+</item>
         </note>
     </changelog>
 </changelogs>
@@ -734,8 +756,8 @@ The update server tells Joomla where to check for new versions of your extension
         <tags>
             <tag>stable</tag>
         </tags>
-        <targetplatform name="joomla" version="5\.[0-9]+" />
-        <php_minimum>8.2.0</php_minimum>
+        <targetplatform name="joomla" version="6\.[0-9]+" />
+        <php_minimum>8.3.0</php_minimum>
         <sha256>abc123...</sha256>
         <sha384>def456...</sha384>
         <sha512>ghi789...</sha512>
@@ -746,7 +768,7 @@ The update server tells Joomla where to check for new versions of your extension
 </updates>
 ```
 
-Key fields: `<targetplatform>` uses regex for version matching (e.g., `5\.[0-9]+` matches all Joomla 5.x). Add multiple `<update>` blocks for different versions. The `<changelogurl>` here links the same changelog XML so Joomla can show changes before updating.
+Key fields: `<targetplatform>` uses regex for version matching: `6\.[0-9]+` matches all Joomla 6.x, `5\.[0-9]+` matches all J5.x, `(5|6)\.[0-9]+` covers both lines for a J5/J6 dual-support release. Add multiple `<update>` blocks for different versions. The `<changelogurl>` here links the same changelog XML so Joomla can show changes before updating.
 
 For plugins, add `folder="plugingroup"` and `client="site"` attributes to the `<update>` element. For modules, add `client="site"` or `client="administrator"`.
 
@@ -974,28 +996,27 @@ The file must be named `filter_{view}.xml` (e.g., `filter_items.xml` for the `it
 
 **File:** `mycomponent.script.php`
 
-The script class runs during install, update, and uninstall. Critical for DML operations (INSERT, UPDATE, DELETE) that can't go in SQL update files (which only run DDL).
+The script class runs during install, update, and uninstall. Critical for DML operations (INSERT, UPDATE, DELETE) that can't go in SQL update files (which only run DDL). The lifecycle hooks and class-naming conventions are **shared with modules and plugins** — for the full hook signatures, the class-name table for component/module/plugin, and the DDL-vs-DML rule see [`references/install-script.md`](references/install-script.md). The component-flavored example below uses the canonical `Log::add(..., 'jerror')` pattern from that reference for preflight failure surfacing.
 
 ```php
 <?php
 
 \defined('_JEXEC') or die;
 
-use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Installer\InstallerAdapter;
+use Joomla\CMS\Log\Log;
 
 class Com_MyComponentInstallerScript
 {
-    protected string $minimumPhp = '8.2.0';
-    protected string $minimumJoomla = '5.0.0';
+    protected string $minimumPhp = '8.3.0';     // Joomla 6.x floor; covers J5.3+ too
+    protected string $minimumJoomla = '5.0.0';   // Earliest Joomla version this extension supports
 
     public function preflight(string $type, InstallerAdapter $adapter): bool
     {
         // Runs BEFORE install/update. Return false to abort.
         if (version_compare(PHP_VERSION, $this->minimumPhp, '<')) {
-            $adapter->getParent()->abort(
-                "This extension requires PHP {$this->minimumPhp}+"
-            );
+            Log::add("PHP {$this->minimumPhp}+ required", Log::ERROR, 'jerror');
             return false;
         }
 
@@ -1919,266 +1940,9 @@ class UniqueAliasRule extends FormRule
 
 ## Editor API
 
-Joomla's Editor API provides a unified interface for WYSIWYG editors (TinyMCE, CodeMirror, None/textarea) and editor extension buttons (XTD buttons like "Read More", "Article", "Image").
+Joomla's Editor API provides a unified interface for WYSIWYG editors (TinyMCE, CodeMirror, None) and editor extension buttons. Coverage: the modern `JoomlaEditor` JS API (`get`, `getActive`, `getValue`, `setValue`, `getSelection`, `replaceSelection`, `disable`, `getRawInstance`, `getType`); the legacy `Joomla.editors.instances` proxy; the `JoomlaEditorDecorator` pattern for implementing a custom editor; XTD button plugins (`onEditorButtonsSetup`, `Button` class, `JoomlaEditorButton.registerAction`); the modal-button content-selection flow with `postMessage` and `joomla:content-select`; the `editor` form field type with all attributes (`buttons`, `hide`, `height`, `width`, `editor`, `filter`, `asset_field`, `created_by_field`, `syntax`); and editor plugin registration via `onEditorSetup` with `AbstractEditorProvider`.
 
-### JavaScript API: Getting and Setting Editor Content
-
-The modern API uses `JoomlaEditor` (imported from `editor-api`). The legacy `Joomla.editors.instances` is deprecated but still works via a Proxy wrapper.
-
-**Get/set content from JavaScript:**
-
-```javascript
-// Modern API (preferred)
-import { JoomlaEditor } from 'editor-api';
-
-// Get editor by textarea ID
-const editor = JoomlaEditor.get('jform_description');
-
-// Get the currently active (focused) editor
-const active = JoomlaEditor.getActive();
-
-// Read content
-const html = editor.getValue();
-
-// Replace all content
-editor.setValue('<p>New content</p>');
-
-// Get selected text
-const selection = editor.getSelection();
-
-// Insert at cursor / replace selection
-editor.replaceSelection('<hr id="system-readmore">');
-
-// Disable / enable
-editor.disable(false);  // disable
-editor.disable(true);   // enable
-
-// Get underlying editor instance (e.g., tinymce object)
-const raw = editor.getRawInstance();
-
-// Get editor type name
-const type = editor.getType(); // 'tinymce', 'codemirror', 'none'
-```
-
-**Legacy API (deprecated but functional):**
-
-```javascript
-// Still works but logs deprecation warnings
-const editor = Joomla.editors.instances['jform_description'];
-editor.getValue();
-editor.setValue('content');
-editor.replaceSelection('inserted text');
-```
-
-### Editor Decorator (Implementing a Custom Editor)
-
-All editors must subclass `JoomlaEditorDecorator` and implement the abstract methods:
-
-```javascript
-import JoomlaEditorDecorator from 'editor-decorator';
-import { JoomlaEditor } from 'editor-api';
-
-class MyEditorDecorator extends JoomlaEditorDecorator {
-    getValue() {
-        return this.instance.getContent(); // Your editor's get method
-    }
-
-    setValue(value) {
-        this.instance.setContent(value);
-        return this;
-    }
-
-    getSelection() {
-        return this.instance.getSelectedText();
-    }
-
-    replaceSelection(value) {
-        this.instance.insertAtCursor(value);
-        return this;
-    }
-
-    disable(enable) {
-        this.instance.setReadOnly(!enable);
-        return this;
-    }
-}
-
-// Register with Joomla
-const decorator = new MyEditorDecorator(editorInstance, 'myeditor', textareaId);
-JoomlaEditor.register(decorator);
-```
-
-**Required methods:** `getValue()`, `setValue()`, `getSelection()`, `replaceSelection()`, `disable()`
-
-### Editor XTD Buttons (Extension Buttons)
-
-XTD buttons appear below the editor (e.g., "Read More", "Article", "Image"). They are plugins in the `editors-xtd` group.
-
-**Creating an XTD button plugin:**
-
-```php
-// plugins/editors-xtd/mybutton/src/Extension/MyButton.php
-namespace Vendor\Plugin\EditorsXtd\MyButton\Extension;
-
-use Joomla\CMS\Editor\Button\Button;
-use Joomla\CMS\Event\Editor\EditorButtonsSetupEvent;
-use Joomla\CMS\Language\Text;
-use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\Event\SubscriberInterface;
-
-final class MyButton extends CMSPlugin implements SubscriberInterface
-{
-    public static function getSubscribedEvents(): array
-    {
-        return ['onEditorButtonsSetup' => 'onEditorButtonsSetup'];
-    }
-
-    public function onEditorButtonsSetup(EditorButtonsSetupEvent $event): void
-    {
-        $disabled = $event->getDisabledButtons();
-        if (\in_array($this->_name, $disabled)) {
-            return;
-        }
-
-        $wa = $this->getApplication()->getDocument()->getWebAssetManager();
-        $wa->registerScript(
-            'editor-button.' . $this->_name,
-            'plg_editors-xtd_mybutton/button.min.js',
-            [],
-            ['type' => 'module'],
-            ['editors']  // dependency on editor API
-        );
-
-        $button = new Button($this->_name, [
-            'action'  => 'insert-mywidget',   // Custom action name
-            'text'    => Text::_('PLG_MYBUTTON_BUTTON_TEXT'),
-            'icon'    => 'star',
-            'name'    => $this->_type . '_' . $this->_name,
-        ]);
-
-        $event->getButtonsRegistry()->add($button);
-    }
-}
-```
-
-**JavaScript handler for the button action:**
-
-```javascript
-// build/media_source/plg_editors-xtd_mybutton/js/button.es6.js
-import { JoomlaEditorButton } from 'editor-api';
-
-JoomlaEditorButton.registerAction('insert-mywidget', (editor, options) => {
-    editor.replaceSelection('<div class="my-widget">Widget content</div>');
-});
-```
-
-### Button Action Types
-
-| Action | Behavior | Use Case |
-|--------|----------|----------|
-| `insert` | Inserts `options.content` at cursor | Simple static content insertion |
-| `modal` | Opens `JoomlaDialog` iframe, listens for `postMessage` | Content selection (articles, images, contacts) |
-| Custom name | Your registered handler | Any custom logic |
-
-### Modal Button Pattern (Content Selection)
-
-For buttons that open a modal to select content (like the "Article" button):
-
-**PHP — define button with `action: 'modal'`:**
-
-```php
-$link = 'index.php?option=com_example&view=items&layout=modal&tmpl=component&'
-    . Session::getFormToken() . '=1&editor=' . $event->getEditorId();
-
-$button = new Button($this->_name, [
-    'action' => 'modal',
-    'link'   => $link,
-    'text'   => Text::_('PLG_MYBUTTON_SELECT_ITEM'),
-    'icon'   => 'list',
-    'name'   => $this->_type . '_' . $this->_name,
-], [
-    'popupType'  => 'iframe',
-    'textHeader' => Text::_('PLG_MYBUTTON_MODAL_TITLE'),
-    'modalWidth' => '800px',
-    'modalHeight' => '400px',
-]);
-```
-
-**JavaScript in the modal iframe** — send selection back via `postMessage`:
-
-```javascript
-// In the modal's layout template
-document.querySelectorAll('.select-link').forEach((el) => {
-    el.addEventListener('click', (event) => {
-        event.preventDefault();
-        const title = event.target.dataset.title;
-        const url = event.target.dataset.uri;
-
-        window.parent.postMessage({
-            messageType: 'joomla:content-select',
-            html: `<a href="${url}">${title}</a>`,
-        });
-    });
-});
-```
-
-The parent window's `modal` action handler automatically calls `editor.replaceSelection()` with the received `html` (or `text`) and closes the dialog.
-
-### Editor Form Field (PHP)
-
-The `editor` form field type in XML automatically renders the configured WYSIWYG editor:
-
-```xml
-<field
-    name="description"
-    type="editor"
-    label="JGLOBAL_DESCRIPTION"
-    filter="JComponentHelper::filterText"
-    buttons="true"
-    height="400"
-    width="100%"
-/>
-```
-
-**Attributes:**
-
-| Attribute | Values | Purpose |
-|-----------|--------|---------|
-| `buttons` | `true`, `false`, or comma-separated list | Show/hide XTD buttons. List = show only named buttons |
-| `hide` | Comma-separated list | Hide specific XTD buttons |
-| `height` | Pixels (e.g., `500`) | Editor height |
-| `width` | CSS value (e.g., `100%`) | Editor width |
-| `editor` | Pipe-separated list | Force specific editor(s): `tinymce\|codemirror\|none` |
-| `filter` | `JComponentHelper::filterText` | Server-side HTML filtering |
-| `asset_field` | Field name | Form field containing asset ID (for ACL) |
-| `created_by_field` | Field name | Form field containing author ID |
-| `syntax` | `html`, `css`, `php`, etc. | Syntax highlighting mode (CodeMirror) |
-
-### Editor Plugin Registration (PHP)
-
-Editor plugins register via the `onEditorSetup` event:
-
-```php
-// plugins/editors/myeditor/src/Extension/MyEditor.php
-use Joomla\CMS\Event\Editor\EditorSetupEvent;
-
-final class MyEditor extends CMSPlugin implements SubscriberInterface
-{
-    public static function getSubscribedEvents(): array
-    {
-        return ['onEditorSetup' => 'onEditorSetup'];
-    }
-
-    public function onEditorSetup(EditorSetupEvent $event): void
-    {
-        $event->getEditorsRegistry()->add(
-            new MyEditorProvider($this->params, $this->getApplication(), $this->getDispatcher())
-        );
-    }
-}
-```
-
-The provider extends `AbstractEditorProvider` and implements `display()` (renders the editor HTML) and `getName()` (returns the editor identifier like `'tinymce'`).
+For full code examples and the button-action behavior table, read [`references/editor-api.md`](references/editor-api.md).
 
 ## Layouts (LayoutHelper)
 
@@ -2272,249 +2036,9 @@ Render a child layout relative to the current layout:
 
 ## Form Fields
 
-### Built-in Field Types Reference
+Joomla ships ~90 built-in form field types and a clean extension model for custom field classes. Coverage: built-in field reference (basic inputs, selection fields, file/media fields, special fields including `subform`, `rules`, `ordering`, `note`, `componentlayout`), the `subform` repeatable-group pattern with external/inline form sources, the `media` picker (`types`, `preview`, `directory` attributes), authoring custom fields by extending `ListField` / `GroupedlistField` / `FormField` / `TextField` / `PredefinedlistField`, the `addfieldprefix` form attribute, and modern layout-based field rendering with `getLayoutData()`.
 
-Joomla provides ~90 built-in field types. The most commonly used:
-
-**Basic inputs:**
-
-| Type | XML | Notes |
-|------|-----|-------|
-| `text` | `type="text"` | Single-line text |
-| `textarea` | `type="textarea"` | Multi-line, set `rows` and `cols` |
-| `email` | `type="email"` | Email validation |
-| `url` | `type="url"` | URL validation |
-| `tel` | `type="tel"` | Phone number |
-| `number` | `type="number"` | Numeric with `min`, `max`, `step` |
-| `password` | `type="password"` | Masked input |
-| `hidden` | `type="hidden"` | Hidden value |
-| `editor` | `type="editor"` | WYSIWYG editor (see Editor API section) |
-| `color` | `type="color"` | Color picker |
-| `calendar` | `type="calendar"` | Date picker with format, `showtime="true"` for datetime |
-
-**Selection fields:**
-
-| Type | XML | Notes |
-|------|-----|-------|
-| `list` | `type="list"` | Dropdown with `<option>` children |
-| `groupedlist` | `type="groupedlist"` | Dropdown with `<group>` → `<option>` hierarchy |
-| `radio` | `type="radio"` | Radio buttons, use `class="btn-group"` for toggle style |
-| `checkboxes` | `type="checkboxes"` | Multiple checkboxes |
-| `checkbox` | `type="checkbox"` | Single checkbox |
-| `category` | `type="category"` | Category selector, needs `extension="com_example"` |
-| `tag` | `type="tag"` | Tag picker, supports `mode="ajax"` and `multiple="true"` |
-| `user` | `type="user"` | User selector |
-| `accesslevel` | `type="accesslevel"` | Access level dropdown |
-| `contentlanguage` | `type="contentlanguage"` | Language selector |
-| `sql` | `type="sql"` | Options from SQL query |
-| `status` | `type="status"` | Published/unpublished/trashed/archived |
-
-**File/media fields:**
-
-| Type | XML | Notes |
-|------|-----|-------|
-| `media` | `type="media"` | Media picker modal, `types="images"` or `"images,videos"` |
-| `file` | `type="file"` | File upload input |
-| `filelist` | `type="filelist"` | Lists files in a directory |
-| `folderlist` | `type="folderlist"` | Lists folders |
-
-**Special fields:**
-
-| Type | XML | Notes |
-|------|-----|-------|
-| `subform` | `type="subform"` | Repeatable nested form groups |
-| `rules` | `type="rules"` | Permissions matrix |
-| `ordering` | `type="ordering"` | Ordering position |
-| `spacer` | `type="spacer"` | Visual separator, `hr="true"` for line |
-| `note` | `type="note"` | Display-only message |
-| `componentlayout` | `type="componentlayout"` | Layout selector for a view |
-
-### SubformField (Repeatable Groups)
-
-Creates repeatable sets of fields — useful for things like social media links, phone numbers, or any list of structured items.
-
-**Form XML:**
-```xml
-<field name="social_links"
-       type="subform"
-       label="Social Media Links"
-       layout="joomla.form.field.subform.repeatable"
-       multiple="true"
-       min="0"
-       max="10"
-       buttons="add,remove,move"
-       formsource="social_link.xml"
-/>
-```
-
-**Subform definition** (`admin/forms/social_link.xml`):
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<form>
-    <field name="platform" type="list" label="Platform" default="facebook">
-        <option value="facebook">Facebook</option>
-        <option value="twitter">X (Twitter)</option>
-        <option value="instagram">Instagram</option>
-        <option value="youtube">YouTube</option>
-    </field>
-    <field name="url" type="url" label="URL" />
-</form>
-```
-
-**Or define inline** (no separate XML file):
-```xml
-<field name="phones" type="subform" label="Phone Numbers"
-       layout="joomla.form.field.subform.repeatable" multiple="true">
-    <form>
-        <field name="type" type="list" label="Type" default="mobile">
-            <option value="mobile">Mobile</option>
-            <option value="work">Work</option>
-            <option value="home">Home</option>
-        </field>
-        <field name="number" type="tel" label="Number" />
-    </form>
-</field>
-```
-
-**Available subform layouts:**
-- `joomla.form.field.subform.default` — single group (not repeatable)
-- `joomla.form.field.subform.repeatable` — vertical repeatable rows with add/remove/move buttons
-- `joomla.form.field.subform.repeatable-table` — table layout for repeatable rows
-
-**Reading subform data in PHP:**
-```php
-$socialLinks = json_decode($item->social_links, true) ?? [];
-foreach ($socialLinks as $link) {
-    echo $link['platform'] . ': ' . $link['url'];
-}
-```
-
-### MediaField
-
-The media picker opens Joomla's Media Manager modal for selecting images, videos, and documents.
-
-```xml
-<field name="image"
-       type="media"
-       label="COM_EXAMPLE_FIELD_IMAGE"
-       types="images"
-       preview="true"
-       previewWidth="200"
-       previewHeight="200"
-       directory="example"
-/>
-```
-
-**Attributes:**
-- `types` — comma-separated: `images`, `audios`, `videos`, `documents`
-- `preview` — show thumbnail preview (`true`/`false`)
-- `previewWidth` / `previewHeight` — preview dimensions in pixels
-- `directory` — restrict to a subdirectory of the media root
-
-### Creating Custom Form Fields
-
-Custom fields extend a base field class and live in `admin/src/Field/`:
-
-**Simple list field (database-backed options):**
-```php
-namespace Vendor\Component\Example\Administrator\Field;
-
-use Joomla\CMS\Form\Field\ListField;
-use Joomla\CMS\HTML\HTMLHelper;
-use Joomla\Database\DatabaseAwareTrait;
-
-class TeacherlistField extends ListField
-{
-    use DatabaseAwareTrait;
-
-    protected $type = 'Teacherlist';
-
-    protected function getOptions(): array
-    {
-        $db    = $this->getDatabase();
-        $query = $db->createQuery()
-            ->select($db->quoteName(['id', 'name']))
-            ->from($db->quoteName('#__example_teachers'))
-            ->where($db->quoteName('published') . ' = 1')
-            ->order($db->quoteName('name'));
-
-        $db->setQuery($query);
-        $items = $db->loadObjectList();
-
-        $options = [];
-        foreach ($items as $item) {
-            $options[] = HTMLHelper::_('select.option', $item->id, $item->name);
-        }
-
-        return array_merge(parent::getOptions(), $options);
-    }
-}
-```
-
-**Fully custom field (own rendering):**
-```php
-namespace Vendor\Component\Example\Administrator\Field;
-
-use Joomla\CMS\Form\FormField;
-
-class StarratingField extends FormField
-{
-    protected $type = 'Starrating';
-
-    // Option 1: Layout-based rendering (preferred, allows template overrides)
-    protected $layout = 'mycomponent.field.starrating';
-
-    // Option 2: Override getInput() for inline HTML
-    protected function getInput(): string
-    {
-        $html = '<div class="star-rating">';
-        for ($i = 1; $i <= 5; $i++) {
-            $checked = ($i <= (int) $this->value) ? ' checked' : '';
-            $html .= '<input type="radio" name="' . $this->name . '" value="' . $i . '"' . $checked . '>';
-        }
-        $html .= '</div>';
-
-        return $html;
-    }
-}
-```
-
-**Reference in form XML:**
-```xml
-<form addfieldprefix="Vendor\Component\Example\Administrator\Field">
-    <field name="teacher_id" type="teacherlist" label="Teacher" />
-    <field name="rating" type="starrating" label="Rating" />
-</form>
-```
-
-**Key base classes to extend:**
-- `ListField` — dropdown with dynamic options (`getOptions()`)
-- `GroupedlistField` — grouped dropdown (`getGroups()`)
-- `FormField` — fully custom rendering (`getInput()`)
-- `TextField` — text input with extra logic
-- `PredefinedlistField` — list with hardcoded options (`$predefinedOptions`)
-
-### Field Layout Rendering
-
-Modern fields use layouts for rendering, making them template-overridable:
-
-```php
-class MyField extends FormField
-{
-    // Layout file: layouts/joomla/form/field/myfield.php
-    protected $layout = 'joomla.form.field.myfield';
-
-    // collectLayoutData() is called automatically — override getLayoutData() to add custom data
-    protected function getLayoutData(): array
-    {
-        $data = parent::getLayoutData();
-        $data['customProp'] = $this->element['customprop'] ?? 'default';
-        return $data;
-    }
-}
-```
-
-The layout file receives `$displayData` with all field metadata (`id`, `name`, `value`, `label`, `class`, `disabled`, `required`, `hint`, `description`, `field` object, etc.).
+For the full type reference, custom-field examples, and layout overrides, read [`references/form-fields.md`](references/form-fields.md).
 
 ## Menu Item Types (Site Views)
 
@@ -2669,7 +2193,7 @@ Joomla extensions that need third-party PHP libraries use Composer. The `compose
     "license": "GPL-2.0-or-later",
     "minimum-stability": "stable",
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.3",
         "joomla/framework": "^3.0"
     },
     "require-dev": {
@@ -2878,7 +2402,7 @@ When working on a Joomla project, check whether the project has its own `CLAUDE.
 
 Common patterns seen in production Joomla 5+ components:
 
-- **Entity prefixes** — Some projects prefix entity names to avoid collisions (e.g., `Cwm` prefix in CWM components, `Eb` in EventBooking). Follow the project's existing convention.
+- **Entity prefixes** — Some projects prefix entity names to avoid collisions (e.g., a `<Vendor>` prefix on every Model/View/Table class). Follow the project's existing convention.
 - **Plugin groups** — Real components typically ship with several plugin types: content, finder (Smart Search), schemaorg (structured data), system, task (scheduled jobs), and webservices (REST API).
 - **Module variants** — Both admin-side and site-side modules in `modules/admin/` and `modules/site/`.
 - **Build tooling** — Composer for PHP dependencies + npm for JS/CSS asset compilation. Look for `composer.json` and `package.json` at the project root.
@@ -2888,296 +2412,9 @@ Common patterns seen in production Joomla 5+ components:
 
 ## Testing
 
-### Directory Structure
+PHPUnit (PHP) and Jest (JavaScript) patterns for Joomla 5+ extensions, anchored on the principle Joomla core uses for its own tests: **load real CMS classes, don't stub them.** Topics covered: `tests/Unit/` + `tests/Integration/` directory layout, `phpunit.xml` configuration, the bootstrap that loads Joomla's vendor autoloader plus your component's PSR-4 autoloader, the `getQueryStub()` helper for a real `DatabaseQuery` with only 2 abstract methods stubbed, model/table/helper test patterns, Jest with jsdom for JavaScript with mocked `Joomla` globals, and four high-stakes testing gotchas (`DatabaseInterface` lacks `createQuery()`, `CMSApplicationInterface` lacks `getSession()`, the bootstrap-must-load-`libraries/vendor/autoload.php` rule, `createMock()` vs `createStub()` for expectations).
 
-```
-tests/
-├── Unit/
-│   ├── bootstrap.php          # Loads real Joomla CMS classes
-│   ├── Admin/
-│   │   ├── Helper/            # Admin helper tests
-│   │   ├── Model/             # Admin model tests
-│   │   └── Table/             # Table class tests
-│   └── Site/
-│       ├── Helper/            # Site helper tests
-│       └── Model/             # Site model tests
-├── Integration/
-│   └── ...                    # Tests that require a database
-└── js/
-    └── *.test.js              # Jest tests for JavaScript
-```
-
-Mirror the `admin/src/` and `site/src/` structure inside `tests/Unit/` so test locations are predictable.
-
-### PHPUnit Configuration
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
-         bootstrap="tests/Unit/bootstrap.php"
-         colors="true"
-         cacheDirectory="build/.phpunit.cache">
-    <testsuites>
-        <testsuite name="Unit">
-            <directory>tests/Unit</directory>
-        </testsuite>
-        <testsuite name="Integration">
-            <directory>tests/Integration</directory>
-        </testsuite>
-    </testsuites>
-    <source>
-        <include>
-            <directory suffix=".php">admin/src</directory>
-            <directory suffix=".php">site/src</directory>
-        </include>
-    </source>
-</phpunit>
-```
-
-Define granular test suites (e.g., "Admin Helper Tests", "Site Model Tests") when you have enough tests to benefit from selective runs.
-
-### Bootstrap: Load Real Joomla CMS
-
-The key insight from Joomla core's own test infrastructure: **load the real CMS classes, don't stub them.** This validates your code against actual Joomla signatures, catching J5→J6 breaking changes automatically.
-
-```php
-<?php
-// tests/Unit/bootstrap.php
-
-// Point to a Joomla installation (configure via build.properties or env var)
-$joomlaPath = getenv('JOOMLA_PATH') ?: '/path/to/joomla';
-
-if (!is_dir($joomlaPath . '/libraries')) {
-    throw new RuntimeException(
-        'Joomla installation not found. Set JOOMLA_PATH environment variable.'
-    );
-}
-
-// Define Joomla constants
-define('JPATH_ROOT', $joomlaPath);
-define('JPATH_BASE', JPATH_ROOT);
-define('JPATH_SITE', JPATH_ROOT);
-define('JPATH_ADMINISTRATOR', JPATH_ROOT . '/administrator');
-define('JPATH_LIBRARIES', JPATH_ROOT . '/libraries');
-
-// Load the REAL Joomla autoloader
-require_once JPATH_LIBRARIES . '/loader.php';
-require_once JPATH_LIBRARIES . '/vendor/autoload.php';
-
-// Register the component's own autoloader
-require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
-```
-
-**Why real CMS, not stubs?** Stubs drift from the actual API. When Joomla 6 removes a method or changes a return type, tests using real classes catch it immediately. Stubs silently pass.
-
-### Base Test Case with Query Stub
-
-Joomla core's `UnitTestCase` provides a `getQueryStub()` helper — a minimal concrete `DatabaseQuery` that only needs 2 abstract methods. This is far simpler than stubbing the entire `DatabaseInterface`:
-
-```php
-<?php
-
-namespace Vendor\Component\MyComponent\Tests;
-
-use Joomla\Database\DatabaseInterface;
-use Joomla\Database\DatabaseQuery;
-use Joomla\Database\QueryInterface;
-use PHPUnit\Framework\TestCase;
-
-abstract class MyComponentTestCase extends TestCase
-{
-    /**
-     * Create a real DatabaseQuery with only 2 abstract methods stubbed.
-     * Gives you a working query builder with proper __toString().
-     */
-    protected function getQueryStub(DatabaseInterface $db): QueryInterface
-    {
-        return new class ($db) extends DatabaseQuery {
-            public function groupConcat($expression, $separator = ','): string
-            {
-                return '';
-            }
-
-            public function processLimit($query, $limit, $offset = 0): string
-            {
-                return (string) $query;
-            }
-        };
-    }
-}
-```
-
-### Model Test Pattern
-
-Use `createStub(DatabaseDriver::class)` for the database (see gotcha below about `DatabaseInterface` vs `DatabaseDriver`), wire up `getQueryStub()` for the query builder, and pass the stub via the model's config array:
-
-```php
-<?php
-
-use Joomla\Database\DatabaseDriver;
-use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
-
-class MyModelTest extends MyComponentTestCase
-{
-    public function testGetListQueryFilters(): void
-    {
-        $db = $this->createStub(DatabaseDriver::class);
-        $db->method('createQuery')->willReturn($this->getQueryStub($db));
-        $db->method('getPrefix')->willReturn('jos_');
-
-        $model = new MyItemModel(
-            ['dbo' => $db],
-            $this->createStub(MVCFactoryInterface::class)
-        );
-
-        // Test the model behavior
-        $this->assertInstanceOf(MyItemModel::class, $model);
-    }
-}
-```
-
-**Key points:**
-- Models accept `['dbo' => $db]` in their config array — no need to mock the full DI container
-- `getQueryStub()` gives you a real query builder, so `$query->select()`, `$query->where()`, and `$query->__toString()` all work correctly
-- Stub additional methods as needed: `loadObject()`, `loadObjectList()`, `execute()`, `quoteName()`, etc.
-- **Always stub `DatabaseDriver`**, not `DatabaseInterface`, when your code calls `createQuery()` (see Testing Gotchas below)
-
-### Table Test Pattern
-
-```php
-$db = $this->createStub(DatabaseDriver::class);
-$db->method('createQuery')->willReturn($this->getQueryStub($db));
-$db->method('getPrefix')->willReturn('jos_');
-
-$dispatcher = $this->createStub(DispatcherInterface::class);
-$table = new MyTable($db, $dispatcher);
-
-// Test check() validation
-$table->title = '';
-$this->expectException(\UnexpectedValueException::class);
-$table->check();
-```
-
-### Helper / Utility Test Pattern
-
-Pure functions and helpers are the simplest to test — no database stubs needed:
-
-```php
-class MyHelperTest extends MyComponentTestCase
-{
-    public function testFormatDuration(): void
-    {
-        $this->assertSame('1:30:00', MyHelper::formatDuration(5400));
-        $this->assertSame('0:05:30', MyHelper::formatDuration(330));
-    }
-}
-```
-
-### JavaScript Tests (Jest)
-
-Use Jest with jsdom for testing frontend JavaScript. Configure in `package.json`:
-
-```json
-{
-  "jest": {
-    "testEnvironment": "jsdom",
-    "testMatch": ["<rootDir>/tests/js/**/*.test.js"],
-    "coverageDirectory": "build/reports/coverage-js"
-  }
-}
-```
-
-For code that depends on `Joomla.Text._()` or other Joomla globals, mock them in a setup file or per-test:
-
-```javascript
-// Mock Joomla globals
-beforeEach(() => {
-    window.Joomla = {
-        Text: {
-            _: jest.fn((key) => key),
-            strings: {}
-        },
-        getOptions: jest.fn(() => ({})),
-        renderMessages: jest.fn()
-    };
-});
-```
-
-### What to Test (and What Not To)
-
-**Do test:**
-- Helper/utility methods (pure logic, formatting, calculations)
-- Model query construction and filtering logic
-- Table `check()` validation rules
-- Custom form field logic
-- JavaScript UI helpers and data transformations
-
-**Don't test:**
-- Joomla framework internals (MVC routing, form binding, ACL checks)
-- Simple getters/setters with no logic
-- Template HTML output (use E2E tests for that)
-
-### Testing Gotchas
-
-**`DatabaseInterface` does NOT have `createQuery()`** — `createQuery()` lives on the abstract `DatabaseDriver` class, not on `DatabaseInterface`. When stubbing the database for tests that call `createQuery()`, you **must** use `createStub(DatabaseDriver::class)`, not `createStub(DatabaseInterface::class)`. PHPUnit will throw `MethodCannotBeConfiguredException` if you try to configure `createQuery()` on a `DatabaseInterface` stub.
-
-```php
-// WRONG — createQuery() is not on DatabaseInterface
-$db = $this->createStub(DatabaseInterface::class);
-$db->method('createQuery')->willReturn(...); // Throws!
-
-// CORRECT — DatabaseDriver has createQuery()
-$db = $this->createStub(DatabaseDriver::class);
-$db->method('createQuery')->willReturn($this->getQueryStub($db)); // Works
-```
-
-**`CMSApplicationInterface` does NOT have `getSession()`** — `getSession()` is defined on `SessionAwareWebApplicationInterface` (from the framework) and mixed in via `SessionAwareWebApplicationTrait`. To stub an application with `getSession()`, use the concrete `CMSApplication` class:
-
-```php
-// WRONG — getSession() is not on CMSApplicationInterface
-$app = $this->createStub(CMSApplicationInterface::class);
-$app->method('getSession')->willReturn($session); // Throws!
-
-// CORRECT — CMSApplication inherits getSession() via trait
-$app = $this->createStub(CMSApplication::class);
-$app->method('getSession')->willReturn($session); // Works
-```
-
-**Bootstrap must load Joomla's vendor autoloader** — A PSR-4 autoloader for `Joomla\CMS\*` classes (from `libraries/src/`) is not enough. Framework packages (`Joomla\Database\*`, `Joomla\Event\*`, `Joomla\Session\*`, etc.) live in `libraries/vendor/` and require loading `libraries/vendor/autoload.php`. Without this, any test stubbing framework interfaces will fail with "Class or interface does not exist".
-
-```php
-// In bootstrap.php — load BOTH autoloaders
-require_once $joomlaCmsPath . '/libraries/vendor/autoload.php'; // Framework packages
-// Then register your own PSR-4 autoloader for Joomla\CMS\* from libraries/src/
-```
-
-**`createMock()` vs `createStub()` for expectations** — PHPUnit's `createStub()` does not support `expects()`. If you need to assert that a method is (or isn't) called, use `createMock()` instead:
-
-```php
-// WRONG — expects() on a stub triggers a deprecation warning
-$db = $this->createStub(DatabaseDriver::class);
-$db->expects($this->never())->method('loadObject'); // Deprecated!
-
-// CORRECT — use createMock() for expectations
-$db = $this->createMock(DatabaseDriver::class);
-$db->expects($this->never())->method('loadObject'); // Clean
-```
-
-### Composer Scripts
-
-Add test commands to `composer.json`:
-
-```json
-{
-  "scripts": {
-    "test": "@test:unit",
-    "test:unit": "phpunit --testsuite Unit",
-    "test:integration": "phpunit --testsuite Integration",
-    "check": ["@lint", "@test"]
-  }
-}
-```
+For full setup, code patterns, and gotcha details, read [`references/testing.md`](references/testing.md).
 
 ## Version Migration: Joomla 5 → 6 (and Beyond)
 
@@ -3212,383 +2449,7 @@ This skill targets Joomla 6 native patterns that also work on Joomla 5. As Jooml
 
 ## Common Gotchas & Pitfalls
 
-Hard-won lessons from real Joomla 5/6 extension development. These are easy to get wrong because IDE autocompletion, documentation gaps, or reasonable assumptions lead you astray.
+Hard-won lessons from real Joomla 5/6 extension development — easy to get wrong because IDE autocompletion, documentation gaps, or reasonable assumptions lead you astray. Topics covered: `BaseController` vs `FormController`, J5 controller API differences (`$this->input` not `getInput()`), event dispatching for J5 compatibility, plugin manifest naming, plugin language file conventions, task plugin language keys, `AdminModel`/`Table` save workflow, `task=` routing, `form.validate` asset, `Table::check()`, HTTP client class, `Registry::get()` defaults, `Text::script()` registration, `Joomla.Text._()` truthy-key trap, batch routing, **the 3-part SEF router contract** (router class + `RouterServiceInterface` + `RouterFactory`), hidden menu items for SEF, router callback naming, **WAM URI auto-resolution / non-standard paths / inline assets**, Bootstrap 5.3 dark mode classes, dynamic modal cleanup, and `getStoreId()` in `ListModel`.
 
-### BaseController vs FormController — Choose the Right Parent
+For full details and code examples, read [`references/gotchas.md`](references/gotchas.md).
 
-**Never extend `BaseController` for controllers that handle form submissions.** `BaseController` only supports `display()` — it has no form handling, no checkin/checkout, no save/cancel/apply workflow, and no CSRF token validation for POST requests.
-
-| Controller Parent | Use When |
-|-------------------|----------|
-| `BaseController` | Display-only controllers (list views, read-only pages, AJAX endpoints) |
-| `FormController` | Single-item CRUD (edit, save, apply, cancel) — handles checkout, redirect, form validation |
-| `AdminController` | List operations (publish, unpublish, delete, reorder, checkin, batch) |
-
-```php
-// WRONG — no save(), apply(), cancel(), or form handling
-class ItemController extends BaseController { }
-
-// CORRECT — full form lifecycle with checkout, redirect, CSRF
-class ItemController extends FormController { }
-
-// CORRECT — list operations with batch, publish, ordering
-class ItemsController extends AdminController { }
-```
-
-If you need a custom action on a form controller (e.g., `export`), extend `FormController` and add your method — don't drop down to `BaseController` just because you want a simpler class.
-
-### Controller API Differences (Joomla 5)
-
-`BaseController` in Joomla 5 does **NOT** have `getInput()` or `getApplication()` methods. Use the properties directly:
-
-```php
-// WRONG — throws "method not found" on Joomla 5
-$input = $this->getInput();
-$app   = $this->getApplication();
-
-// CORRECT — works on both Joomla 5 and 6
-$input = $this->input;
-$app   = $this->app;
-```
-
-Only `CMSApplication::getInput()` exists in J5 (so `$app->getInput()` is fine, but `$this->getInput()` on a controller is NOT).
-
-### Event Dispatching (Joomla 5 Compatibility)
-
-Typed event classes (`ContentPrepareEvent`, etc.) with `->getResult()` are **NOT available in Joomla 5**. If your extension must support J5:
-
-```php
-// WRONG on Joomla 5 — typed events don't exist
-$event = new ContentPrepareEvent('onContentPrepare', ['context' => $context, 'subject' => $item]);
-$this->getDispatcher()->dispatch($event->getName(), $event);
-$results = $event->getResult();
-
-// CORRECT for J5 compatibility — returns results directly as array
-$results = $app->triggerEvent('onContentPrepare', [$context, &$item, &$params, $page]);
-```
-
-### Plugin Manifest Naming
-
-Plugin manifest files **must** be named `{element}.xml` (matching the plugin element name) for discover install to work. For example, a plugin with element `example` must have `example.xml`, not `plg_content_example.xml`.
-
-**CRITICAL:** Having both `example.xml` AND `plg_content_example.xml` in the plugin directory causes Joomla's Discover to create duplicate extension records. Only the `{element}.xml` file should exist in the source. The build/packaging process can rename to `plg_{group}_{element}.xml` for the installable ZIP if needed by the installer.
-
-### Plugin Language Files
-
-Plugin language files must use the **locale prefix naming convention** when stored in the plugin's own `language/` directory:
-
-```
-language/en-GB/en-GB.plg_content_example.ini
-language/en-GB/en-GB.plg_content_example.sys.ini
-```
-
-**NOT** `plg_content_example.ini` (without the `en-GB.` prefix) — that format only works when files are in `administrator/language/en-GB/`.
-
-The plugin class **must** set `$autoloadLanguage = true` for Joomla to load language files from the plugin directory:
-
-```php
-class Example extends CMSPlugin implements SubscriberInterface
-{
-    protected $autoloadLanguage = true;
-    // ...
-}
-```
-
-Without this property, language strings will show as raw keys (e.g., `PLG_CONTENT_EXAMPLE_TITLE`).
-
-### Task Plugin Language Keys
-
-`TaskPluginTrait` appends `_TITLE` and `_DESC` to the `langConstPrefix` defined in `TASKS_MAP`. Language keys **must** include these suffixes:
-
-```php
-protected const TASKS_MAP = [
-    'myplugin.my_task' => [
-        'langConstPrefix' => 'PLG_TASK_MYPLUGIN_TASK_MYTASK',
-        'method'          => 'doMyTask',
-    ],
-];
-```
-
-```ini
-; Language file must have _TITLE and _DESC suffixed keys:
-PLG_TASK_MYPLUGIN_TASK_MYTASK_TITLE="My Task Name"
-PLG_TASK_MYPLUGIN_TASK_MYTASK_DESC="Description of what this task does."
-```
-
-Using just `PLG_TASK_MYPLUGIN_TASK_MYTASK` (without `_TITLE`) will NOT work — the task type selector will show the raw key.
-
-### Always Use AdminModel + Table for CRUD
-
-**Never bypass Joomla's Table save workflow** with direct `$db->insertObject()` / `$db->updateObject()` in model `save()` methods. The `AdminModel::save()` → `Table::bind()` → `Table::check()` → `Table::store()` chain handles:
-
-- Setting `$this->setState('item.id', $newId)` for redirect after save
-- Checkout/checkin management
-- Session state cleanup
-- Event dispatching
-
-```php
-// WRONG — breaks FormController redirects, ID tracking, checkout
-public function save($data): bool
-{
-    $db = $this->getDatabase();
-    $db->insertObject('#__mytable', (object) $data);
-    return true;
-}
-
-// CORRECT — delegates to Table class
-public function save($data): bool
-{
-    $data['modified'] = Factory::getDate()->toSql();
-    return parent::save($data);
-}
-```
-
-### List-to-Edit Links Must Use task= Routing
-
-Links from list views to edit views **must** use `task={entity}.edit&id=X`, NOT `view={entity}&layout=edit&id=X`:
-
-```php
-// WRONG — bypasses FormController, no checkout, broken session state
-Route::_('index.php?option=com_mycomponent&view=item&layout=edit&id=' . $item->id)
-
-// CORRECT — routes through FormController::edit()
-Route::_('index.php?option=com_mycomponent&task=item.edit&id=' . $item->id)
-```
-
-`FormController::edit()` handles setting the layout, checking out the record, and managing the user state.
-
-### Load form.validate for Form Views
-
-Any view that renders a form with `class="form-validate"` **must** load the `form.validate` web asset, or `Joomla.submitbutton()` will throw an `isValid` error:
-
-```php
-// In HtmlView::display()
-$this->getDocument()->getWebAssetManager()->useScript('form.validate');
-```
-
-### Table::check() and DatabaseModel::fix()
-
-- In `Table::check()`, throw `\UnexpectedValueException` with `Text::_()` language keys for validation errors
-- `DatabaseModel::fix()` only executes **DDL** (ALTER TABLE, CREATE INDEX, etc.) — use PHP migration steps for **DML** (INSERT, UPDATE, DELETE data changes)
-
-### HTTP Client Class
-
-`Joomla\CMS\Http\HttpFactory::getHttp()` is the correct way to get an HTTP client. **`Joomla\Http\HttpFactory` does NOT exist** — IDE autocompletion may suggest the wrong namespace. Don't let the linter "fix" this import.
-
-```php
-// CORRECT
-use Joomla\CMS\Http\HttpFactory;
-$http = HttpFactory::getHttp();
-
-// WRONG — this class does not exist
-use Joomla\Http\HttpFactory;
-```
-
-### Registry::get() Defaults
-
-`$params->get('key')` returns `null` when the key is missing from the stored JSON (common with component/module params). **Always provide a default:**
-
-```php
-// Dangerous — returns null if 'items_per_page' was never saved
-$limit = $params->get('items_per_page');
-
-// Safe — explicit default
-$limit = $params->get('items_per_page', 10);
-```
-
-### Text::script() Registration Location
-
-JavaScript language strings via `Joomla.Text._('KEY')` only work if the key was registered server-side with `Text::script()`. Register in the right place:
-
-- **Components**: Register in `HtmlView::display()` before the template renders
-- **Modules**: Register in `Dispatcher::dispatch()` before the module template loads
-
-```php
-// In HtmlView::display() or Dispatcher::dispatch()
-Text::script('COM_MYCOMPONENT_CONFIRM_DELETE');
-Text::script('COM_MYCOMPONENT_SAVING');
-```
-
-### Joomla.Text._() Returns Raw Key When Unregistered
-
-`Joomla.Text._('SOME_KEY')` returns the raw key string (e.g., `"SOME_KEY"`) when the key was never registered — this is **truthy**, so a fallback pattern like `Joomla.Text._('KEY') || 'fallback'` will never fire the fallback. Compare against the key itself:
-
-```javascript
-// WRONG — fallback never fires because unregistered keys return the key string (truthy)
-const msg = Joomla.Text._('COM_MYCOMP_LABEL') || 'Default Label';
-
-// CORRECT — detect missing registration
-const key = 'COM_MYCOMP_LABEL';
-const translated = Joomla.Text._(key);
-const msg = (translated !== key) ? translated : 'Default Label';
-```
-
-### Batch Task Routing
-
-`AdminController` (the plural list controller) does **NOT** have a `batch()` method. Only `FormController` (the singular edit controller) has it. If batch operations aren't working, check that your form controller exists and is being routed correctly.
-
-### Router Registration (CRITICAL — 3 Parts Required)
-
-The SEF Router **will not work at all** unless all three parts are in place. Missing any one causes `Route::_()` to fall back to raw query parameters (`?view=xxx`) instead of clean SEF URLs.
-
-**Part 1: Router class** (`site/src/Service/Router.php`):
-```php
-class Router extends RouterView
-{
-    public function __construct(SiteApplication $app, AbstractMenu $menu)
-    {
-        $this->registerView(new RouterViewConfiguration('items'));
-        // ... register all views ...
-
-        parent::__construct($app, $menu);
-
-        $this->attachRule(new MenuRules($this));
-        $this->attachRule(new StandardRules($this));
-        $this->attachRule(new NomenuRules($this));
-    }
-}
-```
-
-**Part 2: Extension class must implement `RouterServiceInterface`:**
-```php
-use Joomla\CMS\Component\Router\RouterServiceInterface;
-use Joomla\CMS\Component\Router\RouterServiceTrait;
-
-class MyComponent extends MVCComponent implements RouterServiceInterface
-{
-    use RouterServiceTrait;
-    // ...
-}
-```
-
-Without `RouterServiceInterface`, `setRouterFactory()` doesn't exist and the component silently has no router.
-
-**Part 3: Service provider must register `RouterFactory`:**
-```php
-// In services/provider.php
-$container->registerServiceProvider(new RouterFactory('\\Vendor\\Component\\MyComponent'));
-
-// In the ComponentInterface factory:
-$component->setRouterFactory($container->get(RouterFactoryInterface::class));
-```
-
-Without the `RouterFactory` registration, Joomla can't instantiate the Router class, and ALL `Route::_()` calls for the component produce non-SEF URLs.
-
-### Hidden Menu Items for SEF Routing
-
-`Route::_()` uses `SiteMenu::getItems()` which filters by the current user's access levels. For components that require login, the routing menu items **must** have access level `1` (Public) — not `2` (Registered).
-
-With `access=2`, guests can't resolve SEF URLs, so `Route::_()` fails and appends `?view=xxx` to the wrong base URL. The component's controller still enforces login — Public access on the menu item only affects URL resolution.
-
-Components should create a hidden menu type during install with menu items for each site view:
-- Menu type is not assigned to any module (invisible to visitors)
-- Each view gets a published menu item with `access=1`
-- `Route::_('index.php?option=com_mycomponent&view=items')` resolves to `/items` via the hidden menu item
-
-### SEF Router Callback Naming
-
-Router callback methods follow a strict naming convention derived from the view name. Get it wrong and Joomla silently skips your callback, producing broken URLs:
-
-```php
-// View name: 'item' → methods must be:
-public function getItemSegment($id, $query): array    // Build: ID → alias
-public function getItemId($segment, $query): int|false // Parse: alias → ID
-
-// View name: 'category' → methods must be:
-public function getCategorySegment($id, $query): array
-public function getCategoryId($segment, $query): int|false
-```
-
-The method name is `get` + `ucfirst(viewName)` + `Segment` or `Id`. Case must match exactly.
-
-**Common mistakes:**
-- Missing callback → SEF URLs fall back to numeric IDs or break entirely
-- `getSegment()` returning wrong format → must return `[id => alias]` associative array
-- `getId()` not scoping by category → ambiguous aliases across categories resolve to wrong record
-- Rule order wrong → `MenuRules` must come before `StandardRules` before `NomenuRules`
-
-### WAM URI Auto-Resolution
-
-In `joomla.asset.json`, do **NOT** include `css/` or `js/` subdirectories in asset URIs. Joomla auto-resolves them:
-
-```json
-{
-  "name": "com_mycomponent.admin",
-  "type": "style",
-  "uri": "com_mycomponent/admin.css"
-}
-```
-
-Joomla maps `com_mycomponent/admin.css` → `media/com_mycomponent/css/admin.css` automatically. Including the subdirectory (`com_mycomponent/css/admin.css`) causes a 404.
-
-### WAM Non-Standard Paths
-
-Vendor assets stored outside the standard `media/com_*/` structure (e.g., `media/fancybox/`, `media/vendor/`) **cannot use auto-resolution**. Use a full literal path instead:
-
-```php
-$wa->registerAndUseScript('vendor.fancybox', 'media/fancybox/fancybox.umd.js');
-$wa->registerAndUseStyle('vendor.fancybox', 'media/fancybox/fancybox.css');
-```
-
-### WAM Inline Assets
-
-For dynamic CSS (e.g., CSS custom properties from PHP) or scripts that need PHP data, use inline asset methods:
-
-```php
-// Dynamic CSS variables
-$wa->addInlineStyle(":root { --brand-color: {$brandColor}; }");
-
-// Script with PHP data (heredoc keeps it readable)
-$wa->addInlineScript(<<<JS
-    const MyConfig = {
-        baseUrl: '{$baseUrl}',
-        itemId: {$itemId},
-        token: '{$token}'
-    };
-JS);
-```
-
-### Dark Mode (Bootstrap 5.3)
-
-Joomla 5+ admin uses Bootstrap 5.3 dark mode via `data-bs-theme="dark"` on `<html>`. When writing admin templates:
-
-- **NEVER** use `bg-light` — it stays white in dark mode
-- **NEVER** use `btn-outline-*` — very low contrast against dark backgrounds. Use solid `btn-*` variants instead (e.g., `btn-primary` not `btn-outline-primary`)
-- Use color-adaptive classes: `bg-body-secondary`, `bg-body-tertiary`, `border rounded`
-- Replace `text-muted` with `text-body-secondary`
-- Test your templates with both light and dark modes enabled
-
-### Bootstrap 5 Dynamic Modal Cleanup
-
-When creating modals programmatically with `new bootstrap.Modal()`, do **NOT** rely on `bsModal.hide()` for teardown — it doesn't reliably clean up the backdrop, `aria-hidden`, and body scroll-lock. Use full manual cleanup:
-
-```javascript
-const cleanup = () => {
-    bsModal.dispose();
-    modalEl.remove();
-    document.querySelectorAll('.modal-backdrop').forEach(n => n.remove());
-    document.body.classList.remove('modal-open');
-    document.body.style.removeProperty('overflow');
-    document.body.style.removeProperty('padding-right');
-};
-```
-
-This affects any Joomla extension that creates confirmation dialogs, AJAX editors, or wizard modals via JavaScript rather than static HTML markup.
-
-### getStoreId() in ListModel
-
-`ListModel::getStoreId()` generates a hash key to distinguish cached data sets. If you add custom filters or state to your list model, you **must** override this method or the model will return stale cached results when filters change:
-
-```php
-protected function getStoreId($id = ''): string
-{
-    $id .= ':' . $this->getState('filter.search');
-    $id .= ':' . $this->getState('filter.published');
-    $id .= ':' . $this->getState('filter.category_id');
-    $id .= ':' . serialize($this->getState('filter.access'));
-
-    return parent::getStoreId($id);
-}
-```
-
-Every `filter.*` state your `getListQuery()` uses must appear in `getStoreId()`. Miss one and you get the previous filter's results from cache.

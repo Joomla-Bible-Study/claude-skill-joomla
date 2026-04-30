@@ -2,11 +2,16 @@
 
 ## Table of Contents
 1. [Directory Structure](#directory-structure)
-2. [Manifest XML](#manifest-xml)
-3. [Service Provider](#service-provider)
-4. [Dispatcher](#dispatcher)
-5. [Helper Class](#helper-class)
-6. [Template (Layout)](#template)
+2. [Manifest XML](#manifest-xml) — universal elements in [`manifest.md`](manifest.md)
+3. [Language Files](#language-files) — full conventions in [`language-files.md`](language-files.md)
+4. [Service Provider](#service-provider) — universal pattern in [`service-provider.md`](service-provider.md)
+5. [Dispatcher](#dispatcher) (incl. Web Asset Manager registration)
+6. [Helper Class](#helper-class)
+7. [Template (Layout)](#template-layout)
+8. [Caching](#caching)
+9. [Install Script (Optional)](#install-script-optional) — full walkthrough in [`install-script.md`](install-script.md)
+10. [Admin Module](#admin-module)
+11. [Joomla 6.1 capabilities](#joomla-61-capabilities)
 
 ---
 
@@ -34,6 +39,8 @@ mod_example/
 ---
 
 ## Manifest XML
+
+For the **universal** elements that appear in every extension type's manifest (`<extension>` root attributes, the metadata block, `<files>`, `<media>`, `<languages>`, `<scriptfile>`, `<update>` / `<updateservers>`) see [`references/manifest.md`](manifest.md). The example below is module-specific: it adds the `client="site"` (or `"administrator"`) attribute and the `<config><fields name="params">` block where module params are declared.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -96,9 +103,24 @@ Key points:
 
 ---
 
+## Language Files
+
+Modules use the `MOD_<ELEMENT>_*` key prefix and ship two `.ini` files: a runtime file for layout strings (`en-GB.mod_example.ini`) and a `.sys.ini` for the install / Module Manager listing (`en-GB.mod_example.sys.ini`).
+
+The full conventions — file-naming, plurals, `_FIELD_<NAME>_LABEL` / `_DESC` form-field pattern, `Text::script()` JS registration, the dispatcher as the right place to register module JS strings — are **shared across all extension types** and live in [`references/language-files.md`](language-files.md). Module-specific reminders:
+
+- The manifest's `<languages>` block has no `folder=""` attribute (modules ship a single `language/` subtree).
+- Field labels in the `<config>` block (e.g., `MOD_EXAMPLE_COUNT` at line 69) only resolve once the runtime `.ini` is loaded by the Module Manager. Set `<description>MOD_EXAMPLE_XML_DESCRIPTION</description>` to a key in the `.sys.ini` so the Modules listing is translatable.
+
+---
+
 ## Service Provider
 
+The wrapping pattern (`ServiceProviderInterface` + anonymous class + `register()` + `Container::registerServiceProvider()`) is shared across components, modules, and plugins. The universal pattern, what each extension type registers, and the common DI pitfalls live in [`references/service-provider.md`](service-provider.md). What's specific to modules is **which factories get registered** — `ModuleDispatcherFactory`, `HelperFactory`, and the generic `Module` provider — and the namespace prefixes the first two take.
+
 **File:** `services/provider.php`
+
+(Verified against [`mod_articles_news/services/provider.php` on `joomla-cms` `6.1-dev`](https://github.com/joomla/joomla-cms/blob/6.1-dev/modules/mod_articles_news/services/provider.php) — same factory set, same namespace-prefix shape.)
 
 ```php
 <?php
@@ -131,6 +153,8 @@ The `HelperFactory` registers your helper so the dispatcher can inject it.
 **File:** `src/Dispatcher/Dispatcher.php`
 
 The dispatcher orchestrates the module's rendering pipeline: load language, gather data, include template.
+
+(Base-class signatures verified against [`AbstractModuleDispatcher` on `joomla-cms` `6.1-dev`](https://github.com/joomla/joomla-cms/blob/6.1-dev/libraries/src/Dispatcher/AbstractModuleDispatcher.php). Constructor takes `(\stdClass $module, CMSApplicationInterface $app, Input $input)`; `getLayoutData()` returns `array|false` with `module`, `app`, `input`, `params`, `template` keys.)
 
 ```php
 <?php
@@ -168,6 +192,34 @@ class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareI
 ```
 
 The `getLayoutData()` method is the key override point. The base method provides `$module`, `$app`, `$input`, `$params`, and `$template`. You add your own data on top.
+
+### Web Asset Manager registration from the dispatcher
+
+The dispatcher is the right place to register module-specific scripts and styles, before the template renders. Use the application's document and the Web Asset Manager:
+
+```php
+protected function getLayoutData(): array
+{
+    $data = parent::getLayoutData();
+
+    $wa = $this->getApplication()->getDocument()->getWebAssetManager();
+    $wa->useStyle('mod_example.style');
+    $wa->useScript('mod_example.script');
+
+    // Register a JS-loadable language string from the dispatcher
+    \Joomla\CMS\Language\Text::script('MOD_EXAMPLE_LOADING');
+
+    $data['items'] = $this->getHelperFactory()
+        ->getHelper('ExampleHelper')
+        ->getItems($data['params'], $this->getApplication());
+
+    return $data;
+}
+```
+
+The asset names (`mod_example.style`, `mod_example.script`) come from the module's `media/joomla.asset.json`; Joomla auto-resolves the URI to `media/mod_example/css/style.css` and `media/mod_example/js/script.js`. See `references/gotchas.md` § "WAM URI Auto-Resolution" for the path-resolution rules and the `media/vendor/...` exception for non-standard asset paths.
+
+`Text::script()` registration must happen here, before the template loads — otherwise `Joomla.Text._('MOD_EXAMPLE_LOADING')` returns the raw key. See `references/gotchas.md` for the truthy-key trap.
 
 ---
 
@@ -263,6 +315,27 @@ if (empty($items)) {
 
 ---
 
+## Caching
+
+Joomla caches module output between requests when the **module instance** has caching enabled (admin → Modules → your module → `Advanced` → `Caching` = `Use global` or `Yes`). The cache is keyed per module instance plus a per-module **cache id** that the dispatcher's flow doesn't override unless you ask it to.
+
+For most modules the default keying is fine: same params + same user + same page = same cached output. Two cases you have to handle yourself:
+
+- **Output that depends on the URL beyond `Itemid`** (e.g., the current article's id): pass a custom modifier through the `cache_id` channel, or set `cache_lifetime` to `0` if the output truly can't be cached safely.
+- **Output that depends on session state** (per-user data, recently-viewed lists): set the manifest's `<config>` so the user can disable caching, and document that Use global / Yes will produce stale data for them.
+
+There is no current public hook to customize the cache key from the dispatcher; for instance-level cache control, declare the relevant fields in `<config>` and let admins flip the switch.
+
+---
+
+## Install Script (Optional)
+
+Modules **rarely** need a `<scriptfile>` — most ship without one. Add a script only when you need an environment check beyond what Joomla enforces, an asset-directory pre-creation, or any cleanup on uninstall that Joomla won't do automatically (e.g., custom rows your module wrote at runtime).
+
+When you do need one, the lifecycle hooks (`preflight`, `install`, `update`, `postflight`, `uninstall`) and the class-naming convention (`Mod_<Element>InstallerScript`) are **shared with components and plugins**. The full pattern, hook signatures, and example skeletons live in [`references/install-script.md`](install-script.md).
+
+---
+
 ## Admin Module
 
 For admin-side modules, the structure is identical but:
@@ -275,4 +348,15 @@ For admin-side modules, the structure is identical but:
   And the Dispatcher lives under the `Administrator` sub-namespace.
 - Placed in `administrator/modules/` when installed
 
-**Proclaim example**: The Proclaim project has modules under both `modules/admin/` and `modules/site/` in its development repo.
+In practice, larger Joomla projects often ship modules under both `modules/admin/` and `modules/site/` in the same source tree, so the build can package admin and site variants from one repo.
+
+---
+
+## Joomla 6.1 capabilities
+
+Two module-relevant additions shipped in Joomla 6.1 ([release milestone](https://github.com/joomla/joomla-cms/milestone/148?closed=1), released 2026-04-14):
+
+- **Versions for Modules** ([PR #46772](https://github.com/joomla/joomla-cms/pull/46772)) — modules now participate in the UCM versioning history (`#__ucm_history`), so admins can see and revert past module-instance configurations the same way they can for articles and categories. Nothing in your module's code needs to change; the capability is plumbed at the core Modules administrator level. Worth knowing because user expectations shift: "where's the version history for this module" is now a reasonable question.
+- **`#__extensions.custom_data`** ([PR #46622](https://github.com/joomla/joomla-cms/pull/46622)) — components, menus, modules, and template styles all gained a `custom_data` JSON column on `#__extensions`. Use it for arbitrary per-extension metadata that doesn't belong in `params` (which is user-facing) — e.g., post-install bookkeeping, telemetry opt-ins, or feature flags scoped to a single installed instance. Read/write via `Factory::getContainer()->get('DatabaseDriver')` against the `#__extensions` row keyed by your module's `extension_id`.
+
+Neither feature changes the patterns in this reference; both are additive. A future revision can add a worked example for `custom_data` if a clear use case emerges.
