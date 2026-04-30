@@ -18,17 +18,34 @@ Works with [Claude Code](https://claude.com/claude-code) (as a plugin) and with 
 - Web Asset Manager (WAM) — registering CSS/JS, dependencies, attributes
 - Backward-compatible patterns (Joomla 5 → 6, no compat plugin required)
 
-Reference files in `skills/joomla/references/` provide deep-dive guidance for each extension type:
+Reference files in `skills/joomla/references/` provide deep-dive guidance, loaded on demand to keep the per-load token cost low.
+
+**Per extension type:**
 
 - `component.md` — full component scaffolding (frontend + backend)
 - `module.md` — module structure with dispatchers
-- `plugin.md` — plugin event subscribers
+- `plugin.md` — plugin event subscribers (`SubscriberInterface`, `CMSPlugin`)
 - `library.md` — shared library packages
+
+**Cross-cutting (shared across extension types):**
+
+- `manifest.md` — universal `<extension>` manifest XML elements
+- `install-script.md` — `<scriptfile>` lifecycle hooks (`preflight` / `install` / `update` / `postflight` / `uninstall`)
+- `language-files.md` — `.ini` filename / key-prefix / plural / `Text::script()` conventions
+- `service-provider.md` — universal `services/provider.php` wrapping pattern + per-type binding table
+- `component-router.md` — SEF URL router walkthrough (component-specific)
+
+**Topical deep-dives:**
+
+- `editor-api.md` — JoomlaEditor JS API + XTD button surface
+- `form-fields.md` — built-in field types + custom-field authoring
+- `testing.md` — PHPUnit + Jest patterns with real-CMS bootstrap
+- `gotchas.md` — hard-won J5/J6 pitfalls (controller parents, routing, WAM, modal cleanup, etc.)
 
 ## Requirements
 
 - **Joomla:** 5.x or 6.x (target: native 6, backward compatible with 5)
-- **PHP:** 8.2+ (Joomla 6 minimum), 8.3+ recommended
+- **PHP:** 8.3+ minimum and supported, 8.4 recommended (Joomla 6.x — see [manual.joomla.org/docs/get-started/technical-requirements](https://manual.joomla.org/docs/get-started/technical-requirements/))
 - **Coding standard:** PSR-12 (PHP), Joomla ESLint config (JavaScript)
 
 ## Installation
@@ -83,6 +100,11 @@ Once installed, the skill activates automatically whenever you mention Joomla ex
 - "Create a Joomla 5 plugin that listens for `onContentAfterSave`"
 - "Scaffold a module that displays..."
 - "Set up a service provider for..."
+- "Register web assets via `joomla.asset.json`"
+- "Write an install script for my J6 component"
+- "Override a layout in my template"
+
+The skill also matches the `J5` / `J6` / `J7` shorthands and specific minor versions (`Joomla 5.4`, `Joomla 6.1`, `Joomla 6.2`, `Joomla 7`).
 
 You can also invoke it explicitly: ask Claude to "use the joomla skill" for any Joomla-based project.
 
