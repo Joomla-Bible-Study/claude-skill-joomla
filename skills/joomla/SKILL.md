@@ -12,6 +12,31 @@ This skill guides you through building Joomla 5+ extensions (components, modules
 **PHP requirement:** 8.2+ (Joomla 6 minimum), 8.3+ recommended
 **Coding standard:** PSR-12 (PHP), Joomla ESLint config (JavaScript)
 
+## Canonical sources
+
+When a Joomla pattern is non-obvious, ambiguous, or might have drifted between versions, verify against upstream before answering. Prefer fetching directly with WebFetch; if the fetch is blocked, fails, or the user is offline, fall back in this order: (1) cite the canonical URL so the user can open it, (2) rely on the patterns documented in this skill and `references/*.md`, (3) ask the user to paste the relevant snippet rather than guess.
+
+**Primary — source of truth for runtime behavior:**
+
+- [`github.com/joomla/joomla-cms`](https://github.com/joomla/joomla-cms) — core CMS. Use branch `5.3-dev` for current Joomla 5, `6.0-dev` for Joomla 6 work.
+  - Frontend component examples: [`components/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/components)
+  - Backend component examples: [`administrator/components/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/administrator/components)
+  - Core plugins: [`plugins/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/plugins)
+  - Core modules: [`modules/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/modules) and [`administrator/modules/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/administrator/modules)
+  - Framework libraries shipped with the CMS: [`libraries/src/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/libraries/src)
+- [`github.com/joomla-framework`](https://github.com/joomla-framework) — standalone Framework packages (DI, Event, Filesystem, etc.) reused by the CMS.
+
+**Documentation:**
+
+- [manual.joomla.org](https://manual.joomla.org/) — current Developer Manual (Joomla 5+). Preferred prose reference.
+- [api.joomla.org](https://api.joomla.org/) — generated API reference (classes, methods, signatures).
+- [framework.joomla.org](https://framework.joomla.org/) — Joomla Framework package docs.
+- [docs.joomla.org](https://docs.joomla.org/) — **legacy wiki**. Useful for historical context (J3/J4) but often stale for J5/J6; cross-check against `joomla-cms` HEAD before quoting.
+
+**When citing in generated code or replies:** prefer a permalink to a specific file/line in `joomla-cms` (right-click → "Copy permalink" produces a commit-pinned URL) over a branch link, so the reference does not silently drift.
+
+**Update cadence:** if a WebFetch reveals the upstream pattern differs from what this skill teaches, flag it to the user and recommend opening an issue on `Joomla-Bible-Study/claude-skill-joomla` so the skill can be corrected.
+
 ## Coding Standards
 
 ### PHPDoc / DocBlocks
