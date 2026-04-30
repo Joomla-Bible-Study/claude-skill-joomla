@@ -9,15 +9,24 @@ All notable changes to the Joomla skill are documented here. The format follows 
 ## [Unreleased]
 
 ### Added
+- `## Canonical sources` section in `SKILL.md` listing the upstream references the skill is built from (joomla-cms repo, manual.joomla.org, api.joomla.org, framework.joomla.org, docs.joomla.org wiki) with WebFetch-first / fallback guidance and a preference for commit-pinned permalinks. Mirrored in `CONTRIBUTING.md` and `README.md`.
 - `CONTRIBUTING.md` covering testing flow, authoring guidelines, PR process, issue guidelines, and versioning.
 - `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, summarized + linked).
 - Issue forms: `.github/ISSUE_TEMPLATE/bug_report.yml` and `feature_request.yml`, plus `config.yml` redirecting Joomla-CMS questions to upstream.
 - `scripts/validate.sh` — structural lints for SKILL.md frontmatter, reference resolution, and `marketplace.json` source paths.
 - `.github/workflows/validate.yml` — runs the validation script on every push to `main` and every PR.
 - `develop` branch as the integration target; `main` is now release-only.
+- `references/editor-api.md` — extracted from `SKILL.md` so the editor JS/PHP API surface is loaded only when needed.
+- `references/form-fields.md` — extracted built-in field reference and custom-field authoring guide.
+- `references/testing.md` — extracted PHPUnit + Jest patterns including real-CMS bootstrap and four high-stakes test gotchas.
+- `references/gotchas.md` — extracted hard-won J5/J6 pitfalls (controller parents, routing, WAM, Bootstrap 5.3 dark mode, modal cleanup, `getStoreId()`, etc.).
+- Quick Start now lists the four new cross-cutting references alongside the existing `component.md` / `module.md` / `plugin.md` / `library.md` set.
 
 ### Changed
 - `marketplace.json` now uses an explicit GitHub object source pinned to `v0.1.0` (`{"source":"github","repo":"...","ref":"v0.1.0"}`) instead of a relative `./` path. This means `/plugin update` only delivers a new version once the `ref` is bumped on `main`, so audit work in progress on `develop` doesn't reach end users prematurely.
+- `SKILL.md` PHP requirement headline updated from "8.2+ (Joomla 6 minimum), 8.3+ recommended" to "8.3+ minimum and supported, 8.4 recommended" for Joomla 6.x, with a citation to [manual.joomla.org/docs/get-started/technical-requirements](https://manual.joomla.org/docs/get-started/technical-requirements/). The previous wording understated the J6.x minimum.
+- All four in-file PHP-version code examples bumped from 8.2 → 8.3 to match the J6.x floor (changelog `<note>`, update-server `<php_minimum>`, install-script `$minimumPhp`, `composer.json` `php` constraint). The `$minimumJoomla` example value is unchanged because it declares which Joomla versions the extension supports — independent of PHP — and a J6-native extension that also supports J5.x must still pin PHP to 8.3.0 (the highest supported-Joomla floor).
+- `SKILL.md` shrunk from 3594 to ~1180 fewer lines by replacing the in-file Editor API, Form Fields, Testing, and Common Gotchas sections with short pointer stubs that name the topics covered. Reduces the per-load token cost without losing any content (full text preserved in the new `references/*.md` files).
 
 ## [0.1.0] — 2026-04-29
 

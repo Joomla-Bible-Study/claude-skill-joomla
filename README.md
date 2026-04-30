@@ -94,7 +94,7 @@ This skill is maintained by [Christian Web Ministries](https://christianwebminis
 - [CWMScriptureLinks](https://github.com/bcordis/CWMScriptureLinks) — auto-link Scripture references
 - Other CWM extensions
 
-Patterns are derived from the [joomla-cms](https://github.com/joomla/joomla-cms) core and real-world production components.
+Patterns are derived from the [joomla-cms](https://github.com/joomla/joomla-cms) core and real-world production components. The skill's `## Canonical sources` section in [`skills/joomla/SKILL.md`](skills/joomla/SKILL.md) lists every upstream reference (joomla-cms, manual.joomla.org, api.joomla.org, framework.joomla.org) Claude consults when verifying patterns — and the fallback order when WebFetch is unavailable.
 
 ## Contributing
 

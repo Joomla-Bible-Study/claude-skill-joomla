@@ -86,7 +86,7 @@ If you change `name` or `description`:
 ### Body and references
 
 - **Be concrete.** Show the actual file structure, the actual XML tag, the actual class name. Vague advice ("set up a service provider") is worse than no advice; Claude will pattern-match on it and produce nonsense.
-- **Cite [`joomla/joomla-cms`](https://github.com/joomla/joomla-cms) when behavior is non-obvious.** A link to the commit or file that proves the pattern saves future maintenance.
+- **Cite [`joomla/joomla-cms`](https://github.com/joomla/joomla-cms) when behavior is non-obvious.** A link to the commit or file that proves the pattern saves future maintenance. The skill's `## Canonical sources` section lists the upstream references the skill is built from — verify changes against them, and prefer **commit-pinned permalinks** to `joomla-cms` over branch links so the citation does not silently drift.
 - **Target Joomla 6, backward compatible to 5** unless the section explicitly says otherwise. Note the version a feature appeared in if it matters.
 - **PHP 8.2+ syntax** in examples (constructor promotion, readonly, enums, named args where they help).
 - **PSR-12 PHP, Joomla ESLint config for JS.** Don't introduce styles that contradict either.
