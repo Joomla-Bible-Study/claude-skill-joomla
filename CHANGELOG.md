@@ -43,6 +43,9 @@ All notable changes to the Joomla skill are documented here. The format follows 
 - `references/component.md` — `CustomlistField` example was calling `HTMLHelper::_('select.option', …)` without importing `Joomla\CMS\HTML\HTMLHelper`. Added the missing `use` statement so the example runs as-is.
 - `references/component.md` — Install/Update Script section now opens with an explicit scope split: PHP lifecycle hooks here, DDL in the new Database Schema & Migrations section. Adds a forward cross-link to the schema section, a reverse note in the migrations section, and a one-line guard against the common mistake of putting `ALTER TABLE` in `postflight()` (races during partial upgrades because schema files run first). Bumped the install-script `$minimumPhp` example from `'8.2.0'` to `'8.3.0'` to match the J6.x floor; the previous value was missed in the SKILL.md PHP audit because it lives in the reference, not the SKILL itself.
 
+### Fixed
+- Removed brand-specific references (CWM / Proclaim / EventBooking) from `SKILL.md` and `references/module.md`. The skill is generic Joomla guidance and shouldn't lean on specific third-party extension code or naming conventions as canonical examples. Replaced with vendor-neutral placeholders (`<Vendor>`, `Acme`, generic `bookings`/`items`) and a generic note about projects shipping admin + site modules in one source tree. The `Joomla-Bible-Study/claude-skill-joomla` GitHub URL stays — that's the skill's own home, not borrowed code.
+
 ## [0.1.0] — 2026-04-29
 
 ### Added
