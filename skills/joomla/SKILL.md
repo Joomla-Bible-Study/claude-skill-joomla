@@ -35,6 +35,7 @@ When a Joomla pattern is non-obvious, ambiguous, or might have drifted between v
 **Documentation:**
 
 - [manual.joomla.org](https://manual.joomla.org/) — current Developer Manual (Joomla 5+). Preferred prose reference.
+  - Source repo: [`github.com/joomla/Manual`](https://github.com/joomla/Manual) (default branch `main`) — the Markdown backing the rendered site. Useful when you need to grep, fetch raw, or cite a permalink to a specific page; manual edits / corrections also go here as PRs.
 - [api.joomla.org](https://api.joomla.org/) — generated API reference (classes, methods, signatures).
 - [framework.joomla.org](https://framework.joomla.org/) — Joomla Framework package docs.
 - [docs.joomla.org](https://docs.joomla.org/) — **legacy wiki**. Useful for historical context (J3/J4) but often stale for J5/J6; cross-check against `joomla-cms` HEAD before quoting.
