@@ -848,7 +848,7 @@ use Joomla\CMS\Router\Route;
             name="description"
             type="editor"
             label="JGLOBAL_DESCRIPTION"
-            filter="JComponentHelper::filterText"
+            filter="\Joomla\CMS\Component\ComponentHelper::filterText"
             buttons="true"
         />
 

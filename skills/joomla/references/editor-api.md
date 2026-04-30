@@ -214,7 +214,7 @@ The `editor` form field type in XML automatically renders the configured WYSIWYG
     name="description"
     type="editor"
     label="JGLOBAL_DESCRIPTION"
-    filter="JComponentHelper::filterText"
+    filter="\Joomla\CMS\Component\ComponentHelper::filterText"
     buttons="true"
     height="400"
     width="100%"
@@ -230,7 +230,7 @@ The `editor` form field type in XML automatically renders the configured WYSIWYG
 | `height` | Pixels (e.g., `500`) | Editor height |
 | `width` | CSS value (e.g., `100%`) | Editor width |
 | `editor` | Pipe-separated list | Force specific editor(s): `tinymce\|codemirror\|none` |
-| `filter` | `JComponentHelper::filterText` | Server-side HTML filtering |
+| `filter` | `\Joomla\CMS\Component\ComponentHelper::filterText` | Server-side HTML filtering (FQCN form — the legacy `JComponentHelper::filterText` alias still resolves on J5/J6 but is slated for removal with the rest of the legacy class aliases) |
 | `asset_field` | Field name | Form field containing asset ID (for ACL) |
 | `created_by_field` | Field name | Form field containing author ID |
 | `syntax` | `html`, `css`, `php`, etc. | Syntax highlighting mode (CodeMirror) |
