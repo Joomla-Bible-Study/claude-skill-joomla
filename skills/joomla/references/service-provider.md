@@ -58,7 +58,7 @@ return new class () implements ServiceProviderInterface {
 |------|----------------|------------------|
 | Component | `ComponentInterface` | `MVCFactory`, `ComponentDispatcherFactory`, `RouterFactory`, `CategoryFactory` (when the component has categories) |
 | Module | `ModuleInterface` | `ModuleDispatcherFactory`, `HelperFactory` (newer modules) |
-| Plugin | `PluginInterface` | `PluginFactory` — wraps the plugin class so Joomla can instantiate it with its `$dispatcher`, `$config`, `$params` |
+| Plugin | `PluginInterface` | None of the `Service\Provider\*` factory shorthands — the provider just `new`s the plugin class with its `$config` array. **On Joomla 6.1+** the constructor takes only `$config` (the legacy `($dispatcher, $config)` two-arg form still works but emits a deprecation warning and will be removed in 7.0; see `references/plugin.md`). |
 
 For a complete worked example see the **Service Provider** section of the relevant reference (`references/component.md`, `references/module.md`, `references/plugin.md`).
 

@@ -85,6 +85,8 @@ Key points:
 
 **File:** `services/provider.php`
 
+The Joomla 6.1+ pattern: instantiate the plugin with **just** `(array) PluginHelper::getPlugin($group, $element)`. Don't pass a dispatcher — `CMSPlugin::__construct()` no longer accepts one (see the J6.0 → J6.1 callout below).
+
 ```php
 <?php
 
@@ -95,7 +97,6 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\PluginHelper;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
-use Joomla\Event\DispatcherInterface;
 use Vendor\Plugin\Content\Example\Extension\Example;
 
 return new class () implements ServiceProviderInterface {
@@ -104,9 +105,7 @@ return new class () implements ServiceProviderInterface {
         $container->set(
             PluginInterface::class,
             function (Container $container) {
-                $dispatcher = $container->get(DispatcherInterface::class);
-                $plugin     = new Example(
-                    $dispatcher,
+                $plugin = new Example(
                     (array) PluginHelper::getPlugin('content', 'example')
                 );
                 $plugin->setApplication(Factory::getApplication());
@@ -117,6 +116,28 @@ return new class () implements ServiceProviderInterface {
     }
 };
 ```
+
+### Joomla 6.0 / 6.1 / 7.0 — dispatcher constructor change
+
+**Before (J5 and J6.0):** `CMSPlugin::__construct(DispatcherInterface $dispatcher, array $config = [])`. Service providers had to fetch the application dispatcher and pass it as the first argument:
+
+```php
+// Legacy two-arg form — works on J5 and J6.0, deprecated on J6.1+, removed in J7.0
+$dispatcher = $container->get(DispatcherInterface::class);
+$plugin     = new Example($dispatcher, (array) PluginHelper::getPlugin('content', 'example'));
+```
+
+**After (J6.1+):** `CMSPlugin::__construct($config = [])`. The dispatcher is no longer a constructor concern — `SubscriberInterface` plugins register their listeners on the application's main dispatcher via `getSubscribedEvents()`, no per-plugin dispatcher reference required.
+
+If you call the legacy two-arg form on J6.1, `CMSPlugin` still accepts it but emits `E_USER_DEPRECATED`:
+
+> Passing an instance of `Joomla\Event\DispatcherInterface` to `Joomla\CMS\Plugin\CMSPlugin::__construct()` will not be supported in 7.0.
+
+(verified against [`libraries/src/Plugin/CMSPlugin.php` on `joomla-cms` `6.1-dev`](https://github.com/joomla/joomla-cms/blob/6.1-dev/libraries/src/Plugin/CMSPlugin.php))
+
+**If your plugin needs to dispatch its own events** (rare — the typical `SubscriberInterface` flow doesn't need this), implement `Joomla\Event\DispatcherAwareInterface` on the plugin class directly and inject the dispatcher with `$plugin->setDispatcher($container->get(DispatcherInterface::class))` from the service provider. Don't rely on `CMSPlugin` providing it; that wiring is being removed in 7.0.
+
+**Backward-compat with J5 / J6.0:** if your extension must support pre-6.1, keep the legacy two-arg form and accept the deprecation warning on J6.1. There is no single call form that works cleanly across 5.x, 6.0, and 6.1+. Pick the floor your extension targets.
 
 ---
 
@@ -134,7 +155,6 @@ namespace Vendor\Plugin\Content\Example\Extension;
 \defined('_JEXEC') or die;
 
 use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\Event\DispatcherInterface;
 use Joomla\Event\SubscriberInterface;
 
 final class Example extends CMSPlugin implements SubscriberInterface
