@@ -46,6 +46,19 @@ All notable changes to the Joomla skill are documented here. The format follows 
 - `references/plugin.md` — Removed the now-dead `use Joomla\Event\DispatcherInterface;` import from the plugin class example (it was only there to satisfy the old constructor's typed parameter).
 - `references/service-provider.md` — Plugin row in the "what each extension type registers" table updated: plugins don't use any `Service\Provider\*` factory shorthand; the provider just `new`s the class with `$config`. Added the J6.0 → J6.1+ deprecation note pointing at `references/plugin.md` for the full story.
 
+### Added (issue #3 — `references/module.md` audit)
+- `references/module.md` — Table of Contents rebuilt to flag the universal-content references (`manifest.md`, `language-files.md`, `service-provider.md`, `install-script.md`) on each affected line, and to expose the new sections.
+- `references/module.md` — Cross-link intros on the Manifest XML and Service Provider sections, deferring universal content to the shared references and keeping module-specific concretizations (`client="site"`/`administrator"`, `<config><fields name="params">`; `ModuleDispatcherFactory` + `HelperFactory` + `Module` factory triple).
+- `references/module.md` — New **Language Files** section with `MOD_*` prefix specifics, the no-`folder=""` `<languages>` quirk, and a pointer to [`language-files.md`](references/language-files.md) for the full conventions.
+- `references/module.md` — New **Web Asset Manager registration from the dispatcher** subsection inside Dispatcher, showing how to use `useStyle`/`useScript` against `joomla.asset.json`-resolved URIs and where to register `Text::script()` keys. Cross-references `gotchas.md` for URI-auto-resolution and the truthy-key trap.
+- `references/module.md` — New **Caching** section explaining default per-instance keying, the two cases that need user attention (URL-dependent output, session-state-dependent output), and the absence of a public dispatcher-level cache-key hook.
+- `references/module.md` — New **Install Script (Optional)** section noting that modules rarely need a `<scriptfile>` and pointing to [`install-script.md`](references/install-script.md) for the shared lifecycle pattern.
+- `references/module.md` — New **Joomla 6.1 capabilities** section covering [PR #46772 (Versions for Modules / `#__ucm_history`)](https://github.com/joomla/joomla-cms/pull/46772) and [PR #46622 (`#__extensions.custom_data` JSON column)](https://github.com/joomla/joomla-cms/pull/46622). Neither requires existing module code to change; both are additive.
+
+### Verified
+- `references/module.md` Dispatcher section now cites [`AbstractModuleDispatcher` on `joomla-cms` `6.1-dev`](https://github.com/joomla/joomla-cms/blob/6.1-dev/libraries/src/Dispatcher/AbstractModuleDispatcher.php) for the constructor and `getLayoutData()` signatures.
+- `references/module.md` Service Provider section now cites [`mod_articles_news/services/provider.php` on `joomla-cms` `6.1-dev`](https://github.com/joomla/joomla-cms/blob/6.1-dev/modules/mod_articles_news/services/provider.php) for the factory triple. Both confirm the existing patterns are current as of 6.1.
+
 ### Fixed
 - Removed brand-specific references (CWM / Proclaim / EventBooking) from `SKILL.md` and `references/module.md`. The skill is generic Joomla guidance and shouldn't lean on specific third-party extension code or naming conventions as canonical examples. Replaced with vendor-neutral placeholders (`<Vendor>`, `Acme`, generic `bookings`/`items`) and a generic note about projects shipping admin + site modules in one source tree. The `Joomla-Bible-Study/claude-skill-joomla` GitHub URL stays — that's the skill's own home, not borrowed code.
 
