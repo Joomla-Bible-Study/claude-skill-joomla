@@ -9,6 +9,7 @@ All notable changes to the Joomla skill are documented here. The format follows 
 ## [Unreleased]
 
 ### Added
+- `SKILL.md` § Canonical sources — added [`github.com/joomla/Manual`](https://github.com/joomla/Manual) (the Markdown source repo backing `manual.joomla.org`) as a sub-bullet under the rendered-manual entry. Useful when you need to grep, fetch raw Markdown, or cite a permalink to a specific manual page; manual corrections also go here as PRs. README cross-reference updated to mention the source repo alongside `manual.joomla.org`.
 - `## Canonical sources` section in `SKILL.md` listing the upstream references the skill is built from (joomla-cms repo, manual.joomla.org, api.joomla.org, framework.joomla.org, docs.joomla.org wiki) with WebFetch-first / fallback guidance and a preference for commit-pinned permalinks. Mirrored in `CONTRIBUTING.md` and `README.md`.
 - `CONTRIBUTING.md` covering testing flow, authoring guidelines, PR process, issue guidelines, and versioning.
 - `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1, summarized + linked).
