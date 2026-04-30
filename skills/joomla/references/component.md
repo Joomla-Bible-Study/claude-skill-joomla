@@ -1,9 +1,9 @@
 # Joomla 5+ Component Reference
 
 ## Table of Contents
-1. [Manifest XML Template](#manifest-xml-template)
-2. [Language Files](#language-files)
-3. [Service Provider](#service-provider)
+1. [Manifest XML Template](#manifest-xml-template) — universal elements in [`manifest.md`](manifest.md)
+2. [Language Files](#language-files) — full conventions in [`language-files.md`](language-files.md) (shared)
+3. [Service Provider](#service-provider) — universal pattern in [`service-provider.md`](service-provider.md) (shared)
 4. [Extension Class](#extension-class)
 5. [Controller Patterns](#controller-patterns)
 6. [Model Patterns](#model-patterns)
@@ -25,6 +25,8 @@
 ---
 
 ## Manifest XML Template
+
+For the **universal** elements that appear in every extension type's manifest — `<extension>` root attributes, the metadata block, `<scriptfile>`, `<files>`, `<media>`, `<languages>`, `<update>`, `<updateservers>`, the update-server XML format — see [`references/manifest.md`](manifest.md). The example below is component-specific: it adds the `<install>` SQL block, `<update><schemas>` for migration paths, and the `<administration>` block with `<menu>` / `<submenu>` / a second `<files>` for the admin-side filesystem.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -108,62 +110,15 @@
 
 ## Language Files
 
-The manifest's `<languages folder="admin">` block declares which `.ini` files Joomla copies into `administrator/language/<tag>/` at install time. The component then resolves keys via `Text::_()` in PHP and `Joomla.Text._()` in JS.
+The component's `<languages folder="admin">` block declares which `.ini` files Joomla copies at install time. Components use the `COM_<ELEMENT>_*` key prefix and ship two files (`en-GB.com_example.ini` for runtime strings, `en-GB.com_example.sys.ini` for install / Extension-Manager strings).
 
-**Naming convention** (locale-prefixed when shipped from the source tree, NOT when installed under `language/`):
-
-```
-admin/language/en-GB/en-GB.com_example.ini       # Front-of-house strings used in admin UI
-admin/language/en-GB/en-GB.com_example.sys.ini   # Strings shown by the installer + extension manager
-site/language/en-GB/en-GB.com_example.ini        # Site (frontend) strings
-```
-
-**`en-GB.com_example.sys.ini`** — keep this small; it's loaded during install and by the Extensions list:
-
-```ini
-COM_EXAMPLE="Example"
-COM_EXAMPLE_XML_DESCRIPTION="Example component for Joomla 5+/6 — manages a list of items."
-COM_EXAMPLE_MENU_ITEMS="Items"
-COM_EXAMPLE_MENU_OPTIONS="Options"
-```
-
-**`en-GB.com_example.ini`** — admin-side strings used by views, toolbars, forms, errors:
-
-```ini
-; Toolbar / list view
-COM_EXAMPLE_NEW_ITEM="New Item"
-COM_EXAMPLE_EDIT_ITEM="Edit Item"
-COM_EXAMPLE_N_ITEMS_PUBLISHED="%d items published."
-COM_EXAMPLE_N_ITEMS_UNPUBLISHED="%d items unpublished."
-
-; Form fields
-COM_EXAMPLE_FIELD_TITLE_LABEL="Title"
-COM_EXAMPLE_FIELD_TITLE_DESC="The display title shown to site visitors."
-COM_EXAMPLE_FIELD_ALIAS_LABEL="Alias"
-COM_EXAMPLE_FIELD_PUBLISHED_LABEL="Status"
-
-; Filter form (searchtools)
-COM_EXAMPLE_FILTER_SEARCH_LABEL="Search"
-COM_EXAMPLE_FILTER_SEARCH_DESC="Search by title or alias."
-
-; Errors / messages
-COM_EXAMPLE_ERROR_UNIQUE_ALIAS="The alias %s is already in use."
-COM_EXAMPLE_SAVE_SUCCESS="Item saved successfully."
-```
-
-**Conventions to follow:**
-
-- All keys uppercase, prefix with the extension element (`COM_EXAMPLE_`), use `_` as separator.
-- Form field labels and descriptions follow `_FIELD_<NAME>_LABEL` / `_FIELD_<NAME>_DESC`. The `<field label="...">` attribute should reference the `_LABEL` key directly (Joomla appends nothing).
-- For pluralization use `Text::plural('COM_EXAMPLE_N_ITEMS', $count)` with keys `COM_EXAMPLE_N_ITEMS_0`, `_1`, `_MORE` (Joomla picks based on `$count`).
-- Don't ship strings the component never uses — extra keys bloat the language file and slow `Joomla.Text._()` lookups when registered with `Text::script()`.
-- For a JS-loaded string, register it server-side with `Text::script('COM_EXAMPLE_KEY')` from `HtmlView::display()` (or the dispatcher) before the template renders. See `references/gotchas.md` for the registration-location rules and the truthy-key trap.
-
-**Note:** This section shows the J5+ filesystem layout (`admin/language/en-GB/...`). If your component still ships strings under `administrator/language/en-GB/<element>.ini` (no locale prefix in the filename), that's the legacy admin-installed location and works on J5/J6 but is no longer the recommended source-tree layout for new components.
+The conventions for filenames, key prefixes, plurals, `Text::script()` registration, and the `_FIELD_<NAME>_LABEL` / `_DESC` form-field pattern are **shared across all extension types** and live in [`references/language-files.md`](language-files.md). Read that for the full picture; what's specific to components is just the prefix (`COM_`) and the dual-`<languages folder="…">` setup (admin and site each get their own block in the manifest).
 
 ---
 
 ## Service Provider
+
+The wrapping pattern (`ServiceProviderInterface` + anonymous class + `register()` + `Container::registerServiceProvider()` / `Container::set()`) is shared across components, modules, and plugins. The universal pattern, what each extension type registers, and the common DI pitfalls live in [`references/service-provider.md`](service-provider.md). What's specific to components is **which factories get registered** — `MVCFactory`, `ComponentDispatcherFactory`, `RouterFactory`, and `CategoryFactory` (when the component has categories) — and the binding of `ComponentInterface` to the component class with its dependencies wired via the corresponding `…Interface` lookups.
 
 **File:** `admin/services/provider.php`
 
