@@ -279,6 +279,29 @@ final class Example extends CMSPlugin implements SubscriberInterface
 | **editors** | WYSIWYG editors | `onInit`, `onSave`, `onGetContent` |
 | **editors-xtd** | Editor buttons | `onDisplay` |
 
+### Other plugin groups (not covered in depth here)
+
+Joomla 6.1 ships 24 plugin groups in total. Beyond the ten above, the rest serve narrower needs and aren't walked through in this skill — file an issue if you need depth on one. The wrapping pattern (`SubscriberInterface` + `getSubscribedEvents()` + handler methods) is identical; only the events and the trait/interface layer differ.
+
+| Group | What it's for |
+|-------|---------------|
+| **fields** | Authoring **new custom-field types** that show up in components' field-XML pickers (this is the plugin side; the field-XML *consumption* side is in [`form-fields.md`](form-fields.md)) |
+| **quickicon** | Admin dashboard icons + status checks (`onGetIcons`) |
+| **workflow** | Content-state transition handlers (`onWorkflowBeforeTransition`, `onWorkflowAfterTransition`) — **component-side** workflow integration is documented in `SKILL.md` |
+| **privacy** | GDPR consent + data export/erase requests |
+| **multifactorauth** | MFA methods (replaces J4 `twofactorauth`) |
+| **api-authentication** | Auth providers for the J4+ Web Services API (Bearer tokens, etc.) |
+| **authentication** | Login auth providers (LDAP, OAuth, SSO) |
+| **captcha** | Captcha providers (reCAPTCHA, hCaptcha, etc.) |
+| **filesystem** | Filesystem adapters for the Media Manager (S3, custom remote stores) |
+| **media-action** | Per-image actions inside the Media Manager (crop, resize, etc.) |
+| **actionlog** | Custom entries in the User Actions Log |
+| **sampledata** | Sample-data installers for distribution work |
+| **behaviour** | Mostly home of the **J6 backward-compatibility plugin**; third-party use is rare |
+| **extension** | Generic extension lifecycle hooks (rarely needed when `installer` group covers most cases) |
+
+These are out of scope for the v0.x line because they're either niche or framework-internal. CLI / `joomla console` command authoring (commands ship inside components, not as a plugin group) is also out of scope here — file an issue if you want it added.
+
 ---
 
 ## Event Examples

@@ -135,6 +135,21 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 - The per-issue audits (#1–#5) and the J6.1 sweep tail (#11) did the substantive verification of each example against `joomla-cms` HEAD as they landed; this consolidation pass confirms none of those citations have drifted in the weeks since. If `6.1-dev` is replaced by a `6.1-stable` tag (or rolled into `main` for the J6.2 cycle), the permalinks will need a one-shot update — the next sweep should re-run the same matrix.
 
+### Added (issue #6 — coverage-gap triage)
+- `references/plugin.md` — new **"Other plugin groups (not covered in depth here)"** subsection right after the common-groups table. Joomla 6.1 ships 24 plugin groups; the existing table walks 10 of them in detail, and the remaining 14 (`fields`, `quickicon`, `workflow`, `privacy`, `multifactorauth`, `api-authentication`, `authentication`, `captcha`, `filesystem`, `media-action`, `actionlog`, `sampledata`, `behaviour`, `extension`) now get one-line "what it's for" descriptions and an explicit **out-of-scope-for-v0.x** label so users can see at a glance whether a given plugin type is covered. The `SubscriberInterface` wrapping pattern is identical for all of them; only the events / traits / interfaces differ. Also notes that **CLI / `joomla console` command authoring** is out of scope for v0.x and lives inside components rather than as a plugin group — file an issue if depth is needed.
+
+### Verified (issue #6 — coverage-gap triage)
+- Compared the skill's plugin / extension-type coverage against the `plugins/` tree in `joomla-cms` `6.1-dev` (24 groups inventoried via `gh api repos/joomla/joomla-cms/contents/plugins?ref=6.1-dev`). Triage decisions for each:
+
+  | Bucket | Items | Rationale |
+  |--------|-------|-----------|
+  | **Covered in depth** | content, system, finder, task, webservices, schemaorg, user, installer, editors, editors-xtd | Existing `references/plugin.md` walkthroughs + table |
+  | **Covered elsewhere in skill** | workflow (component-side: `SKILL.md` § Workflow Integration, `WorkflowServiceTrait` etc.), form-field XML types (`form-fields.md`), JoomlaEditor JS API + XTD buttons (`editor-api.md`), J6.1 module versions / `custom_data` (`module.md`) | Already present, no gap |
+  | **Surfaced as out-of-scope** | fields (plugin authoring), quickicon, workflow (plugin-side), privacy, MFA, api-authentication, authentication, captcha, filesystem, media-action, actionlog, sampledata, behaviour, extension | Listed in the new "Other plugin groups" subsection with a one-line description so users can self-route. Each is niche enough that going deep here would inflate the skill without serving the typical extension developer. |
+  | **Out of scope, no surface** | CLI / `joomla console` command authoring (not a plugin group; lives inside components) | Mentioned as out-of-scope in the new subsection so users know the skill doesn't cover it; issue can be filed if it's wanted. |
+
+- This triage pass is **descriptive, not prescriptive**: the skill's stated scope ("components, modules, plugins, libraries, templates" focused on common patterns) is preserved. No content was added or removed beyond the new "Other plugin groups" subsection that sets expectations explicitly.
+
 ## [0.1.0] — 2026-04-29
 
 ### Added
