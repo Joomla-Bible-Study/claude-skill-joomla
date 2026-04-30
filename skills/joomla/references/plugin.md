@@ -2,11 +2,14 @@
 
 ## Table of Contents
 1. [Directory Structure](#directory-structure)
-2. [Manifest XML](#manifest-xml)
-3. [Service Provider](#service-provider)
-4. [Plugin Class with SubscriberInterface](#plugin-class)
-5. [Common Plugin Groups](#common-plugin-groups)
-6. [Event Examples](#event-examples)
+2. [Manifest XML](#manifest-xml) — universal elements in [`manifest.md`](manifest.md)
+3. [Language Files](#language-files) — full conventions in [`language-files.md`](language-files.md)
+4. [Service Provider](#service-provider) — universal pattern in [`service-provider.md`](service-provider.md)
+5. [Plugin Class with SubscriberInterface](#plugin-class-with-subscriberinterface)
+6. [Common Plugin Groups](#common-plugin-groups)
+7. [Event Examples](#event-examples)
+8. [Install Script (Optional)](#install-script-optional) — full walkthrough in [`install-script.md`](install-script.md)
+9. [Common Pitfalls](#common-pitfalls) — see also [`gotchas.md`](gotchas.md)
 
 ---
 
@@ -31,6 +34,8 @@ plg_content_example/
 
 ## Manifest XML
 
+For the **universal** elements in every extension manifest (`<extension>` root attributes, the metadata block, `<files>`, `<media>`, `<languages>`, `<scriptfile>`, `<update>` / `<updateservers>`) see [`references/manifest.md`](manifest.md). Plugin-specific bits in the example below: the `group="<group>"` attribute on `<extension>`, and the `<config>` block where plugin params are declared.
+
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="plugin" group="content" method="upgrade">
@@ -48,7 +53,8 @@ plg_content_example/
     </files>
 
     <languages folder="language">
-        <language tag="en-GB">en-GB/plg_content_example.ini</language>
+        <language tag="en-GB">en-GB/en-GB.plg_content_example.ini</language>
+        <language tag="en-GB">en-GB/en-GB.plg_content_example.sys.ini</language>
     </languages>
 
     <media destination="plg_content_example" folder="media">
@@ -77,11 +83,26 @@ plg_content_example/
 Key points:
 - `type="plugin"` and `group="content"` in the extension tag
 - Namespace includes the group: `Vendor\Plugin\Content\Example`
-- Manifest filename matches the plugin name (not the group)
+- Manifest filename **must** be `<element>.xml` (here `example.xml`), not `plg_<group>_<element>.xml`. Discover-install will create duplicate extension records if both exist. See [`gotchas.md`](gotchas.md) § Plugin Manifest Naming.
+- Language files in the source tree are **locale-prefixed** (`en-GB.plg_content_example.ini`, not `plg_content_example.ini`); the `<language>` path includes the prefix. See [`language-files.md`](language-files.md) for the full naming/location rules.
+
+---
+
+## Language Files
+
+Plugins use the `PLG_<GROUP>_<ELEMENT>_*` key prefix and ship two `.ini` files: `en-GB.plg_content_example.ini` for runtime strings (event handlers, error messages) and `.sys.ini` for the install-time + Plugins-list strings (description, `<config>` field labels).
+
+The full conventions — file naming, plurals, `_FIELD_<NAME>_LABEL` / `_DESC` form-field pattern, `Text::script()` JS registration — are **shared across all extension types** and live in [`references/language-files.md`](language-files.md). Plugin-specific reminders:
+
+- The plugin class **must** declare `protected $autoloadLanguage = true;` for Joomla to load language files from the plugin's own `language/` directory at runtime. Without it, runtime keys render as raw `PLG_CONTENT_EXAMPLE_*` strings. See [`gotchas.md`](gotchas.md) § Plugin Language Files.
+- Plugin language **filenames** in the source tree carry the locale prefix (`en-GB.plg_content_example.ini`); the `.ini` file under `administrator/language/en-GB/` Joomla maintains internally does not. The manifest's `<language>` path points at the source-tree filename.
+- **Task plugin language keys** must include the `_TITLE` and `_DESC` suffixes that `TaskPluginTrait` appends to `langConstPrefix`. Missing those and the task-type selector renders the raw key. See [`gotchas.md`](gotchas.md) § Task Plugin Language Keys.
 
 ---
 
 ## Service Provider
+
+The wrapping pattern (`ServiceProviderInterface` + anonymous class + `register()`) is shared across components, modules, and plugins; the universal pattern lives in [`references/service-provider.md`](service-provider.md). What's specific to plugins is that they don't use any `Service\Provider\*` factory shorthand — the provider just `new`s the plugin class with its `$config` array and binds the result under `PluginInterface`.
 
 **File:** `services/provider.php`
 
@@ -160,7 +181,21 @@ use Joomla\Event\SubscriberInterface;
 final class Example extends CMSPlugin implements SubscriberInterface
 {
     /**
+     * Required for Joomla to load language files from the plugin's own
+     * language/ directory at runtime. Without it, PLG_CONTENT_EXAMPLE_*
+     * keys render as raw strings.
+     *
+     * @var  boolean
+     */
+    protected $autoloadLanguage = true;
+
+    /**
      * Returns an array of events this subscriber will listen to.
+     *
+     * Event names are strings — core Joomla 6.1 plugins use string keys here too
+     * (verified against plg_content_pagebreak on 6.1-dev). Typed event classes
+     * like ContentPrepareEvent live in Joomla\CMS\Event\Content\* and are useful
+     * for handler method *parameter* types, not for the keys in this array.
      *
      * @return array<string, string>
      */
@@ -332,3 +367,25 @@ final class MyApi extends CMSPlugin implements SubscriberInterface
     }
 }
 ```
+
+---
+
+## Install Script (Optional)
+
+Plugins **rarely** need a `<scriptfile>`. Add one only when you need an environment check beyond what Joomla enforces, must seed default `<config>` params, or have to clean up custom rows / files on uninstall.
+
+When you do need one, the lifecycle hooks (`preflight`, `install`, `update`, `postflight`, `uninstall`) and the class-naming convention (`Plg<Group><Element>InstallerScript`, e.g., `PlgContentExampleInstallerScript`) are **shared with components and modules**. The full pattern, hook signatures, and example skeletons live in [`references/install-script.md`](install-script.md).
+
+---
+
+## Common Pitfalls
+
+The first three are documented in detail in [`references/gotchas.md`](gotchas.md); they're listed here because they account for the bulk of "plugin installs but does nothing" reports.
+
+- **Manifest filename must be `<element>.xml`** — `example.xml` for `plg_content_example`, NOT `plg_content_example.xml`. Discover-install creates duplicate `#__extensions` rows when both files exist in the source tree. The build step can rename to `plg_<group>_<element>.xml` for the installer ZIP if needed. See [`gotchas.md`](gotchas.md) § Plugin Manifest Naming.
+- **Forgot `protected $autoloadLanguage = true;`** — runtime keys render as raw `PLG_*` strings. The `.sys.ini` (loaded by the installer + Plugins listing) still works without it; only the runtime `.ini` is gated.
+- **Locale-prefixed source filename** — `language/en-GB/en-GB.plg_content_example.ini` in the source tree, not `language/en-GB/plg_content_example.ini`. Without the prefix Joomla can't resolve runtime keys even with `$autoloadLanguage = true`.
+- **Class name / namespace / folder mismatch** — for `plg_content_example`: namespace `Vendor\Plugin\Content\Example`, class file `src/Extension/Example.php`, class name `Example`. All three have to agree or the autoloader silently fails and the plugin never instantiates.
+- **Forgot `$plugin->setApplication(Factory::getApplication())` in the service provider** — most plugin code that calls `$this->getApplication()` will then null-dereference at runtime.
+- **Two-arg constructor on J6.1+** — passing `DispatcherInterface` first emits `E_USER_DEPRECATED` and breaks in J7.0. See the J6.0/6.1/7.0 callout in the Service Provider section above.
+- **Typed Event class confusion** — typed events (`ContentPrepareEvent`, etc.) are useful as handler **parameter types** (e.g., `public function onContentPrepare(ContentPrepareEvent $event): void`), but the **keys** in `getSubscribedEvents()` remain string event names (`'onContentPrepare'`). Core J6.1 plugins (verified: [`plg_content_pagebreak`](https://github.com/joomla/joomla-cms/blob/6.1-dev/plugins/content/pagebreak/src/Extension/PageBreak.php)) follow this same pattern. There's no `ContentEvent::ON_CONTENT_PREPARE` constant to import — the abstract `ContentEvent` base class deliberately doesn't define one.
