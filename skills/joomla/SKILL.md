@@ -1,7 +1,7 @@
 ---
 name: joomla
 description: |
-  Joomla 5+ extension development skill for building components, modules, plugins, and templates using modern Joomla MVC architecture with PSR-4 namespaces, dependency injection, and service providers. Use this skill whenever the user mentions Joomla extension development, Joomla components, Joomla modules, Joomla plugins, Joomla templates, Joomla MVC, provider.php, Joomla manifest XML, Joomla 5, Joomla 6, or any work involving Joomla CMS extension code. This skill covers scaffolding new extensions, adding views/models/controllers, writing service providers, creating manifest files, database migrations, language files, custom form fields, plugin event subscribers, module dispatchers, and web asset management. Even if the user just says "add a new view" or "create a controller" in a Joomla project context, use this skill. Also trigger for any Joomla-based project regardless of domain — church software, e-commerce, directories, booking systems, or any custom component.
+  Joomla 5+ extension development skill for building components, modules, plugins, and templates using modern Joomla MVC architecture with PSR-4 namespaces, dependency injection, and service providers. Use this skill whenever the user mentions Joomla extension development, Joomla components, Joomla modules, Joomla plugins, Joomla templates, Joomla MVC, provider.php, Joomla manifest XML, Joomla 5, Joomla 5.4, Joomla 6, Joomla 6.1, Joomla 6.2, Joomla 7, or any work involving Joomla CMS extension code. This skill covers scaffolding new extensions, adding views/models/controllers, writing service providers, creating manifest files, database migrations, language files, custom form fields, plugin event subscribers, module dispatchers, and web asset management. Even if the user just says "add a new view" or "create a controller" in a Joomla project context, use this skill. Also trigger for any Joomla-based project regardless of domain — church software, e-commerce, directories, booking systems, or any custom component.
 ---
 
 # Joomla 5+ Extension Development
@@ -18,12 +18,18 @@ When a Joomla pattern is non-obvious, ambiguous, or might have drifted between v
 
 **Primary — source of truth for runtime behavior:**
 
-- [`github.com/joomla/joomla-cms`](https://github.com/joomla/joomla-cms) — core CMS. Use branch `5.3-dev` for current Joomla 5, `6.0-dev` for Joomla 6 work.
-  - Frontend component examples: [`components/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/components)
-  - Backend component examples: [`administrator/components/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/administrator/components)
-  - Core plugins: [`plugins/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/plugins)
-  - Core modules: [`modules/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/modules) and [`administrator/modules/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/administrator/modules)
-  - Framework libraries shipped with the CMS: [`libraries/src/`](https://github.com/joomla/joomla-cms/tree/6.0-dev/libraries/src)
+- [`github.com/joomla/joomla-cms`](https://github.com/joomla/joomla-cms) — core CMS. **Active dev branches** (verified 2026-04-30, after J6.1 release):
+  - `6.1-dev` — current released J6 line, in patch maintenance. **Default reference for new J6 code.**
+  - `6.2-dev` — next J6 minor in development.
+  - `5.4-dev` — current released J5 line.
+  - `7.0-dev` — next major in development. Where deprecations land for removal (e.g., the `CMSPlugin::__construct(DispatcherInterface, …)` deprecation slated for removal here — see `references/plugin.md`).
+  
+  Pick the branch matching the target Joomla version for the code you're verifying. Re-check [`/branches`](https://github.com/joomla/joomla-cms/branches) periodically — Joomla cuts new minor branches frequently and the names above will drift.
+  - Frontend component examples: [`components/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/components)
+  - Backend component examples: [`administrator/components/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/administrator/components)
+  - Core plugins: [`plugins/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/plugins)
+  - Core modules: [`modules/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/modules) and [`administrator/modules/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/administrator/modules)
+  - Framework libraries shipped with the CMS: [`libraries/src/`](https://github.com/joomla/joomla-cms/tree/6.1-dev/libraries/src)
 - [`github.com/joomla-framework`](https://github.com/joomla-framework) — standalone Framework packages (DI, Event, Filesystem, etc.) reused by the CMS.
 
 **Documentation:**
@@ -740,7 +746,7 @@ The update server tells Joomla where to check for new versions of your extension
         <tags>
             <tag>stable</tag>
         </tags>
-        <targetplatform name="joomla" version="5\.[0-9]+" />
+        <targetplatform name="joomla" version="6\.[0-9]+" />
         <php_minimum>8.3.0</php_minimum>
         <sha256>abc123...</sha256>
         <sha384>def456...</sha384>
@@ -752,7 +758,7 @@ The update server tells Joomla where to check for new versions of your extension
 </updates>
 ```
 
-Key fields: `<targetplatform>` uses regex for version matching (e.g., `5\.[0-9]+` matches all Joomla 5.x). Add multiple `<update>` blocks for different versions. The `<changelogurl>` here links the same changelog XML so Joomla can show changes before updating.
+Key fields: `<targetplatform>` uses regex for version matching: `6\.[0-9]+` matches all Joomla 6.x, `5\.[0-9]+` matches all J5.x, `(5|6)\.[0-9]+` covers both lines for a J5/J6 dual-support release. Add multiple `<update>` blocks for different versions. The `<changelogurl>` here links the same changelog XML so Joomla can show changes before updating.
 
 For plugins, add `folder="plugingroup"` and `client="site"` attributes to the `<update>` element. For modules, add `client="site"` or `client="administrator"`.
 
