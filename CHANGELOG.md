@@ -118,6 +118,23 @@ All notable changes to the Joomla skill are documented here. The format follows 
 ### Limitations (issue #6 — deprecation sweep)
 - This sweep targeted the deprecated APIs already flagged by the skill itself plus a verification pass against `joomla-cms` 6.1-dev for the patterns we recommend. It is **not** an exhaustive `@deprecated` annotation walk through the entire `joomla-cms` 6.1-dev `libraries/src/` tree, nor a cross-check against `6.2-dev` / `7.0-dev` for new deprecations that may have landed there. If a follow-up sweep wants those, it should be a separate audit issue.
 
+### Verified (issue #6 — `joomla-cms` HEAD diff, 2026-04-30)
+- All 14 `joomla/joomla-cms` permalinks in `SKILL.md` and `references/*.md` were re-fetched against `6.1-dev` HEAD; every URL still resolves and every cited claim still matches the current file. **Zero drift, no fixes needed.**
+
+  | # | Citation | File / Resource | Claim | Status |
+  |---|---|---|---|---|
+  | 1 | `references/module.md:123` | `modules/mod_articles_news/services/provider.php` | `ModuleDispatcherFactory` + `HelperFactory` + `Module` triple, namespace-prefix shape | ✓ matches exactly |
+  | 2 | `references/module.md:157` | `libraries/src/Dispatcher/AbstractModuleDispatcher.php` | Constructor `(\stdClass $module, CMSApplicationInterface $app, Input $input)`; `getLayoutData()` `@return array\|false` with `module/app/input/params/template` keys | ✓ matches exactly |
+  | 3 | `references/module.md:357` | Milestone 148 — Joomla 6.1.0 | "released 2026-04-14" | ✓ closed, due 2026-04-14 |
+  | 4 | `references/module.md:359` | PR #46772 — Versions for Modules | merged, J6.1 | ✓ MERGED |
+  | 5 | `references/module.md:360` | PR #46622 — `#__extensions.custom_data` | merged, J6.1 | ✓ MERGED |
+  | 6 | `references/library.md:53` | `libraries/src/Installer/Adapter/LibraryAdapter.php` | parses `<libraryname>`, `<files>`, `<languages>`, `<media>`, and the `<scriptfile>`-driven `manifest_script` | ✓ confirmed (`libraryname` and `manifest_script` parsed directly; files/languages/media via parent `InstallerAdapter`) |
+  | 7 | `references/plugin.md:157` | `libraries/src/Plugin/CMSPlugin.php` | J6.1 single-arg `__construct($config = [])`; legacy `DispatcherInterface` arg emits `E_USER_DEPRECATED` with the documented message | ✓ matches exactly, including the deprecation message text |
+  | 8 | `references/plugin.md:391` | `plugins/content/pagebreak/src/Extension/PageBreak.php` | `getSubscribedEvents()` uses string event-name keys, not class constants | ✓ exact: `'onContentPrepare' => 'onContentPrepare'` |
+  | 9–14 | `SKILL.md:28-32` | `tree/6.1-dev/components`, `tree/6.1-dev/administrator/components`, `tree/6.1-dev/plugins`, `tree/6.1-dev/modules`, `tree/6.1-dev/administrator/modules`, `tree/6.1-dev/libraries/src` | browseable references for working examples | ✓ all six resolve (18, 36, 25, 26, 24, 72 entries respectively) |
+
+- The per-issue audits (#1–#5) and the J6.1 sweep tail (#11) did the substantive verification of each example against `joomla-cms` HEAD as they landed; this consolidation pass confirms none of those citations have drifted in the weeks since. If `6.1-dev` is replaced by a `6.1-stable` tag (or rolled into `main` for the J6.2 cycle), the permalinks will need a one-shot update — the next sweep should re-run the same matrix.
+
 ## [0.1.0] — 2026-04-29
 
 ### Added
