@@ -349,7 +349,7 @@ This is critical. Code must work natively on Joomla 6 WITHOUT the "Behaviour - B
 | `CMSObject` properties via `->get()` / `->set()` | `getItem()` returns `stdClass` in J6 | Direct property access: `$item->title` |
 | `Factory::getUser()` | Deprecated | `$this->getCurrentUser()` or `$this->getIdentity()` |
 | `getSession()->get('user')` | Use identity methods | `$this->getIdentity()` |
-| `getError()` / `setError()` | Use exceptions | Throw `\RuntimeException` |
+| `getError()` / `setError()` on **models** (`BaseDatabaseModel`) | Use exceptions | Throw `\RuntimeException` |
 | `new ClassName()` for models | Hard-coded dependencies | `$this->getMVCFactory()->createModel()` |
 | `jimport()` | Removed | PSR-4 autoloading |
 | `CMSObject` class | Deprecated, removed in J7 | `stdClass` or custom classes |
