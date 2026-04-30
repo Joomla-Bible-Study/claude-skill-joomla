@@ -36,6 +36,7 @@ All notable changes to the Joomla skill are documented here. The format follows 
 ### Fixed
 - `references/component.md` — `\Namespace\Component\Example\…` typos in two `@var` type-hint comments (List and Edit views) replaced with `\Vendor\…` so IDEs resolve the model class correctly.
 - `references/component.md` — `CustomlistField` example was calling `HTMLHelper::_('select.option', …)` without importing `Joomla\CMS\HTML\HTMLHelper`. Added the missing `use` statement so the example runs as-is.
+- `references/component.md` — Install/Update Script section now opens with an explicit scope split: PHP lifecycle hooks here, DDL in the new Database Schema & Migrations section. Adds a forward cross-link to the schema section, a reverse note in the migrations section, and a one-line guard against the common mistake of putting `ALTER TABLE` in `postflight()` (races during partial upgrades because schema files run first). Bumped the install-script `$minimumPhp` example from `'8.2.0'` to `'8.3.0'` to match the J6.x floor; the previous value was missed in the SKILL.md PHP audit because it lives in the reference, not the SKILL itself.
 
 ## [0.1.0] — 2026-04-29
 

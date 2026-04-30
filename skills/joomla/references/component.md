@@ -1018,6 +1018,13 @@ class Dispatcher extends ComponentDispatcher
 
 ## Install/Update Script
 
+The install system has two halves and this section covers one of them:
+
+- **This section — PHP lifecycle hooks.** `<scriptfile>` PHP that runs at `preflight` / `install` / `update` / `postflight` / `uninstall`. Use it for environment checks (PHP/Joomla minimum), DML data migrations (UPDATE / INSERT / DELETE on existing rows), filesystem work, and anything else that needs to branch on `$type` or read the previous version.
+- **Schema files — DDL.** Pure SQL (`CREATE TABLE`, `ALTER TABLE`, `CREATE INDEX`) lives in `sql/install.mysql.utf8.sql` and per-version `sql/updates/mysql/X.Y.Z.sql`. Joomla executes these automatically based on `#__schemas`. See [Database Schema & Migrations](#database-schema--migrations) for the file layout, conventions, and pitfalls.
+
+Don't put schema mutations in the install script's PHP — Joomla's update flow runs schema files first, then the script's `update()`/`postflight()`. Putting an `ALTER TABLE` in `postflight()` works on a fresh install but races on partial upgrades. Don't put data migrations in the SQL files either — they're meant to be re-runnable DDL.
+
 **File:** `mycomponent.script.php` (referenced in manifest as `<scriptfile>`)
 
 ```php
@@ -1031,8 +1038,8 @@ use Joomla\CMS\Log\Log;
 
 class Com_ExampleInstallerScript
 {
-    protected string $minimumPhp = '8.2.0';
-    protected string $minimumJoomla = '5.0.0';
+    protected string $minimumPhp = '8.3.0';     // Joomla 6.x floor; covers J5.3+ too
+    protected string $minimumJoomla = '5.0.0';   // Earliest Joomla version this extension supports
 
     /**
      * Runs BEFORE install/update. Return false to abort.
@@ -1085,6 +1092,8 @@ class Com_ExampleInstallerScript
 
     /**
      * DML migrations that can't go in SQL update files.
+     * For DDL changes (ALTER TABLE etc.) ship a sql/updates/mysql/X.Y.Z.sql instead —
+     * see the "Database Schema & Migrations" section.
      */
     private function migrateData(InstallerAdapter $adapter): void
     {
@@ -1103,6 +1112,8 @@ class Com_ExampleInstallerScript
 ---
 
 ## Database Schema & Migrations
+
+This is the **DDL half** of the install system. The PHP half — environment checks and DML data migrations — lives in [`Install/Update Script`](#installupdate-script) above. Schema files run *before* the install script's `update()` / `postflight()` hooks, so don't depend on data the script will set later.
 
 Joomla components ship two kinds of database files:
 
