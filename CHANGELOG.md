@@ -8,6 +8,12 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-04-30
+
+Content audit + Joomla 6.1 alignment release. No breaking changes; tokenized footprint is smaller (`SKILL.md` shrunk by ~1180 lines as Editor API / Form Fields / Testing / Common Gotchas + 5 cross-cutting refs moved to on-demand `references/*.md`). All examples re-verified against `joomla-cms` `6.1-dev` HEAD on 2026-04-30; zero drift across 14 cited permalinks. Closes audit milestone tracked through issues #1–#5, #6, and #11 across 14 merged PRs (#8–#22).
+
+The detailed entry-by-entry list for this release follows below (originally drafted under `[Unreleased]` while the audit campaign was in progress).
+
 ### Added
 - `SKILL.md` § Canonical sources — added [`github.com/joomla/Manual`](https://github.com/joomla/Manual) (the Markdown source repo backing `manual.joomla.org`) as a sub-bullet under the rendered-manual entry. Useful when you need to grep, fetch raw Markdown, or cite a permalink to a specific manual page; manual corrections also go here as PRs. README cross-reference updated to mention the source repo alongside `manual.joomla.org`.
 - `## Canonical sources` section in `SKILL.md` listing the upstream references the skill is built from (joomla-cms repo, manual.joomla.org, api.joomla.org, framework.joomla.org, docs.joomla.org wiki) with WebFetch-first / fallback guidance and a preference for commit-pinned permalinks. Mirrored in `CONTRIBUTING.md` and `README.md`.
