@@ -2,23 +2,25 @@
 
 ## Table of Contents
 1. [Manifest XML Template](#manifest-xml-template)
-2. [Service Provider](#service-provider)
-3. [Extension Class](#extension-class)
-4. [Controller Patterns](#controller-patterns)
-5. [Model Patterns](#model-patterns)
-6. [Table Class](#table-class)
-7. [View Patterns](#view-patterns)
-8. [Template Files](#template-files)
-9. [Form XML](#form-xml)
-10. [Custom Form Fields](#custom-form-fields)
-11. [Router (SEF URLs)](#router)
-12. [Dispatcher](#dispatcher)
-13. [Install/Update Script](#installupdate-script)
-14. [Component Options (config.xml)](#component-options-configxml)
-15. [Filter Form (Searchtools)](#filter-form-searchtools)
-16. [Site Views](#site-views)
-17. [Access Control (ACL)](#access-control)
-18. [Webservices API Plugin](#webservices-api-plugin)
+2. [Language Files](#language-files)
+3. [Service Provider](#service-provider)
+4. [Extension Class](#extension-class)
+5. [Controller Patterns](#controller-patterns)
+6. [Model Patterns](#model-patterns)
+7. [Table Class](#table-class)
+8. [View Patterns](#view-patterns) (incl. Other View Types: Json/Raw/Feed)
+9. [Template Files](#template-files)
+10. [Form XML](#form-xml)
+11. [Custom Form Fields](#custom-form-fields)
+12. [Router (SEF URLs)](#router-sef-urls) — full walkthrough in [`component-router.md`](component-router.md)
+13. [Dispatcher](#dispatcher)
+14. [Install/Update Script](#installupdate-script)
+15. [Database Schema & Migrations](#database-schema--migrations)
+16. [Component Options (config.xml)](#component-options-configxml)
+17. [Filter Form (Searchtools)](#filter-form-searchtools)
+18. [Site Views](#site-views)
+19. [Access Control (ACL)](#access-control)
+20. [Webservices API Plugin](#webservices-api-plugin)
 
 ---
 
@@ -101,6 +103,63 @@
     </updateservers>
 </extension>
 ```
+
+---
+
+## Language Files
+
+The manifest's `<languages folder="admin">` block declares which `.ini` files Joomla copies into `administrator/language/<tag>/` at install time. The component then resolves keys via `Text::_()` in PHP and `Joomla.Text._()` in JS.
+
+**Naming convention** (locale-prefixed when shipped from the source tree, NOT when installed under `language/`):
+
+```
+admin/language/en-GB/en-GB.com_example.ini       # Front-of-house strings used in admin UI
+admin/language/en-GB/en-GB.com_example.sys.ini   # Strings shown by the installer + extension manager
+site/language/en-GB/en-GB.com_example.ini        # Site (frontend) strings
+```
+
+**`en-GB.com_example.sys.ini`** — keep this small; it's loaded during install and by the Extensions list:
+
+```ini
+COM_EXAMPLE="Example"
+COM_EXAMPLE_XML_DESCRIPTION="Example component for Joomla 5+/6 — manages a list of items."
+COM_EXAMPLE_MENU_ITEMS="Items"
+COM_EXAMPLE_MENU_OPTIONS="Options"
+```
+
+**`en-GB.com_example.ini`** — admin-side strings used by views, toolbars, forms, errors:
+
+```ini
+; Toolbar / list view
+COM_EXAMPLE_NEW_ITEM="New Item"
+COM_EXAMPLE_EDIT_ITEM="Edit Item"
+COM_EXAMPLE_N_ITEMS_PUBLISHED="%d items published."
+COM_EXAMPLE_N_ITEMS_UNPUBLISHED="%d items unpublished."
+
+; Form fields
+COM_EXAMPLE_FIELD_TITLE_LABEL="Title"
+COM_EXAMPLE_FIELD_TITLE_DESC="The display title shown to site visitors."
+COM_EXAMPLE_FIELD_ALIAS_LABEL="Alias"
+COM_EXAMPLE_FIELD_PUBLISHED_LABEL="Status"
+
+; Filter form (searchtools)
+COM_EXAMPLE_FILTER_SEARCH_LABEL="Search"
+COM_EXAMPLE_FILTER_SEARCH_DESC="Search by title or alias."
+
+; Errors / messages
+COM_EXAMPLE_ERROR_UNIQUE_ALIAS="The alias %s is already in use."
+COM_EXAMPLE_SAVE_SUCCESS="Item saved successfully."
+```
+
+**Conventions to follow:**
+
+- All keys uppercase, prefix with the extension element (`COM_EXAMPLE_`), use `_` as separator.
+- Form field labels and descriptions follow `_FIELD_<NAME>_LABEL` / `_FIELD_<NAME>_DESC`. The `<field label="...">` attribute should reference the `_LABEL` key directly (Joomla appends nothing).
+- For pluralization use `Text::plural('COM_EXAMPLE_N_ITEMS', $count)` with keys `COM_EXAMPLE_N_ITEMS_0`, `_1`, `_MORE` (Joomla picks based on `$count`).
+- Don't ship strings the component never uses — extra keys bloat the language file and slow `Joomla.Text._()` lookups when registered with `Text::script()`.
+- For a JS-loaded string, register it server-side with `Text::script('COM_EXAMPLE_KEY')` from `HtmlView::display()` (or the dispatcher) before the template renders. See `references/gotchas.md` for the registration-location rules and the truthy-key trap.
+
+**Note:** This section shows the J5+ filesystem layout (`admin/language/en-GB/...`). If your component still ships strings under `administrator/language/en-GB/<element>.ini` (no locale prefix in the filename), that's the legacy admin-installed location and works on J5/J6 but is no longer the recommended source-tree layout for new components.
 
 ---
 
@@ -476,7 +535,7 @@ class HtmlView extends BaseHtmlView
     public function display($tpl = null): void
     {
         // Joomla 5+: call model methods directly, NOT deprecated $this->get() proxy
-        /** @var \Namespace\Component\Example\Administrator\Model\ItemsModel $model */
+        /** @var \Vendor\Component\Example\Administrator\Model\ItemsModel $model */
         $model = $this->getModel();
 
         $this->items         = $model->getItems();
@@ -539,7 +598,7 @@ class HtmlView extends BaseHtmlView
     public function display($tpl = null): void
     {
         // Joomla 5+: call model methods directly
-        /** @var \Namespace\Component\Example\Administrator\Model\ItemModel $model */
+        /** @var \Vendor\Component\Example\Administrator\Model\ItemModel $model */
         $model = $this->getModel();
 
         $this->form = $model->getForm();
@@ -563,6 +622,74 @@ class HtmlView extends BaseHtmlView
     }
 }
 ```
+
+### Other View Types: Json, Raw, Feed
+
+The examples above use `HtmlView` because it's by far the most common. Joomla also ships three other view base classes for non-HTML output. Pick by the `format` URL parameter (`?format=json` etc.) — Joomla resolves the `<format><view-name>View` class automatically.
+
+**`JsonView` — JSON without the JSON:API envelope.** For ad-hoc AJAX endpoints used by your own admin JS:
+
+```php
+namespace Vendor\Component\Example\Site\View\Items;
+
+use Joomla\CMS\MVC\View\JsonView;
+
+class JsonView extends JsonView
+{
+    public function display($tpl = null): void
+    {
+        $items = $this->getModel()->getItems();
+        // Echo JSON directly — JsonView sets the Content-Type header for you.
+        echo json_encode(['items' => $items], JSON_THROW_ON_ERROR);
+    }
+}
+```
+
+URL: `index.php?option=com_example&view=items&format=json`.
+
+**`RawView` — write the response body yourself.** Use for binary output (PDF, ICS, image proxy) or any non-HTML, non-JSON format. Set the response headers via the document or the application:
+
+```php
+use Joomla\CMS\MVC\View\GenericDataException;
+use Joomla\CMS\MVC\View\HtmlView;
+
+// Yes — RawView is implemented as `format=raw` HtmlView in J5+. The template file
+// is `admin/tmpl/items/default.raw.php` and Joomla strips the chrome.
+```
+
+For a single component view, the simpler path is to keep using `HtmlView` and add a `default.raw.php` template alongside `default.php`.
+
+**`FeedView` — RSS/Atom output.** Populate `$this->document` (a `FeedDocument`) with `FeedItem` instances:
+
+```php
+namespace Vendor\Component\Example\Site\View\Items;
+
+use Joomla\CMS\Document\Feed\FeedItem;
+use Joomla\CMS\MVC\View\HtmlView;
+use Joomla\CMS\Router\Route;
+
+class FeedView extends HtmlView
+{
+    public function display($tpl = null): void
+    {
+        $this->document->title = 'Latest Items';
+        $this->document->link  = Route::_('index.php?option=com_example&view=items');
+
+        foreach ($this->getModel()->getItems() as $row) {
+            $item = new FeedItem();
+            $item->title       = $row->title;
+            $item->link        = Route::_('index.php?option=com_example&view=item&id=' . $row->id);
+            $item->description = $row->summary;
+            $item->date        = $row->created;
+            $this->document->addItem($item);
+        }
+    }
+}
+```
+
+URL: `index.php?option=com_example&view=items&format=feed&type=rss` (or `&type=atom`).
+
+**JSON:API for the REST web service** is a different surface: it lives under `api/components/com_example/...` and uses `BaseApiView` / `JsonapiView`, not `JsonView`. See the [Webservices API Plugin](#webservices-api-plugin) section below.
 
 ---
 
@@ -800,6 +927,7 @@ namespace Vendor\Component\Example\Administrator\Field;
 \defined('_JEXEC') or die;
 
 use Joomla\CMS\Form\Field\ListField;
+use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\Database\DatabaseAwareTrait;
 
 class CustomlistField extends ListField
@@ -844,307 +972,17 @@ Reference field in form XML:
 
 ## Router (SEF URLs)
 
-Joomla's SEF router converts between internal URLs (`index.php?option=com_example&view=item&id=5`) and human-readable URLs (`/example/my-article-title`). The router uses a rule-based middleware chain.
+Joomla's SEF router converts internal URLs (`index.php?option=com_example&view=item&id=5`) into human-readable paths (`/items/news/my-article-title`) and back, using a rule-based middleware chain (`MenuRules` → `StandardRules` → `NomenuRules`).
 
-### How It Works
+This file used to inline the full router walkthrough; it has been moved to its own reference because the section was 300+ lines and has its own pitfalls. **Read [`references/component-router.md`](component-router.md)** for:
 
-**Building** (internal URL → SEF segments): Rules process the query in order, removing matched parameters and appending URL segments.
+- How build/parse work and why rule order matters
+- `RouterViewConfiguration` (`setKey`, `setParent`, `setNestable`, `addLayout`)
+- `get{View}Segment()` / `get{View}Id()` callback naming
+- A simple (no categories) router and a nested-categories router
+- URL examples and a `RouterViewConfiguration` quick reference
 
-**Parsing** (SEF segments → internal URL): Rules process segments in order, consuming them and populating query variables.
-
-**Rule execution order matters:**
-1. `MenuRules` — finds the matching menu item (Itemid), establishes base context
-2. `StandardRules` — builds/parses segments relative to the menu item's view
-3. `NomenuRules` — fallback when no menu item matches (adds view name as first segment)
-
-### View Configuration
-
-Each site view is registered with a `RouterViewConfiguration` that defines:
-- **`setKey('id')`** — the query parameter that identifies this view's record
-- **`setParent($parent, 'catid')`** — parent-child relationship (e.g., item belongs to category)
-- **`setNestable()`** — view supports hierarchical nesting (e.g., nested categories)
-- **`addLayout('blog')`** — registers additional layout for menu item matching
-
-### Callback Methods
-
-The router calls methods on your Router class to convert between IDs and URL segments:
-
-- **`get{View}Segment($id, $query)`** — converts a database ID to a URL-safe segment (alias)
-- **`get{View}Id($segment, $query)`** — converts a URL segment back to a database ID
-
-Method names are derived from the view name in title case: view `item` → `getItemSegment()` / `getItemId()`.
-
-### Simple Router (No Categories)
-
-**File:** `site/src/Service/Router.php`
-
-```php
-<?php
-
-namespace Vendor\Component\Example\Site\Service;
-
-\defined('_JEXEC') or die;
-
-use Joomla\CMS\Application\SiteApplication;
-use Joomla\CMS\Component\Router\RouterView;
-use Joomla\CMS\Component\Router\RouterViewConfiguration;
-use Joomla\CMS\Component\Router\Rules\MenuRules;
-use Joomla\CMS\Component\Router\Rules\NomenuRules;
-use Joomla\CMS\Component\Router\Rules\StandardRules;
-use Joomla\CMS\Menu\AbstractMenu;
-use Joomla\Database\DatabaseInterface;
-use Joomla\Database\ParameterType;
-
-class Router extends RouterView
-{
-    private DatabaseInterface $db;
-
-    public function __construct(SiteApplication $app, AbstractMenu $menu, DatabaseInterface $db)
-    {
-        $this->db = $db;
-
-        // List view (no key needed — shows all items)
-        $items = new RouterViewConfiguration('items');
-        $this->registerView($items);
-
-        // Detail view (keyed by 'id', child of list)
-        $item = new RouterViewConfiguration('item');
-        $item->setKey('id')->setParent($items);
-        $this->registerView($item);
-
-        parent::__construct($app, $menu);
-
-        $this->attachRule(new MenuRules($this));
-        $this->attachRule(new StandardRules($this));
-        $this->attachRule(new NomenuRules($this));
-    }
-
-    /**
-     * Build: convert item ID to URL segment (alias).
-     * Called during URL building. Returns [id => alias].
-     */
-    public function getItemSegment(string $id, array $query): array
-    {
-        // $id may be "5:my-alias" (id:alias format) or just "5"
-        if (str_contains($id, ':')) {
-            [$numericId, $alias] = explode(':', $id, 2);
-            return [(int) $numericId => $alias];
-        }
-
-        // Look up alias from database
-        $dbQuery = $this->db->createQuery()
-            ->select($this->db->quoteName('alias'))
-            ->from($this->db->quoteName('#__example_items'))
-            ->where($this->db->quoteName('id') . ' = :id')
-            ->bind(':id', $id, ParameterType::INTEGER);
-        $this->db->setQuery($dbQuery);
-        $alias = $this->db->loadResult();
-
-        return [(int) $id => $alias ?: $id];
-    }
-
-    /**
-     * Parse: convert URL segment (alias) back to item ID.
-     * Called during URL parsing. Returns the database ID.
-     */
-    public function getItemId(string $segment, array $query): int|false
-    {
-        $dbQuery = $this->db->createQuery()
-            ->select($this->db->quoteName('id'))
-            ->from($this->db->quoteName('#__example_items'))
-            ->where($this->db->quoteName('alias') . ' = :alias')
-            ->bind(':alias', $segment);
-        $this->db->setQuery($dbQuery);
-
-        return (int) $this->db->loadResult() ?: false;
-    }
-}
-```
-
-### Router with Categories (Nested)
-
-For components using Joomla's category system, inject `CategoryFactoryInterface` and use `setNestable()`:
-
-```php
-<?php
-
-namespace Vendor\Component\Example\Site\Service;
-
-\defined('_JEXEC') or die;
-
-use Joomla\CMS\Application\SiteApplication;
-use Joomla\CMS\Categories\CategoryFactoryInterface;
-use Joomla\CMS\Categories\CategoryInterface;
-use Joomla\CMS\Component\Router\RouterView;
-use Joomla\CMS\Component\Router\RouterViewConfiguration;
-use Joomla\CMS\Component\Router\Rules\MenuRules;
-use Joomla\CMS\Component\Router\Rules\NomenuRules;
-use Joomla\CMS\Component\Router\Rules\StandardRules;
-use Joomla\CMS\Menu\AbstractMenu;
-use Joomla\Database\DatabaseInterface;
-use Joomla\Database\ParameterType;
-
-class Router extends RouterView
-{
-    private DatabaseInterface $db;
-    private CategoryFactoryInterface $categoryFactory;
-
-    public function __construct(
-        SiteApplication $app,
-        AbstractMenu $menu,
-        CategoryFactoryInterface $categoryFactory,
-        DatabaseInterface $db
-    ) {
-        $this->db = $db;
-        $this->categoryFactory = $categoryFactory;
-
-        // Categories list (top-level)
-        $categories = new RouterViewConfiguration('categories');
-        $categories->setKey('id');
-        $this->registerView($categories);
-
-        // Single category (nestable — supports /parent/child/grandchild paths)
-        $category = new RouterViewConfiguration('category');
-        $category->setKey('id')->setParent($categories, 'catid')->setNestable()->addLayout('blog');
-        $this->registerView($category);
-
-        // Single item (child of category)
-        $item = new RouterViewConfiguration('item');
-        $item->setKey('id')->setParent($category, 'catid');
-        $this->registerView($item);
-
-        parent::__construct($app, $menu);
-
-        $this->attachRule(new MenuRules($this));
-        $this->attachRule(new StandardRules($this));
-        $this->attachRule(new NomenuRules($this));
-    }
-
-    /**
-     * Build: category ID → nested path segments.
-     * Returns [id => alias, ...] for each level of the category tree.
-     */
-    public function getCategorySegment(string $id, array $query): array
-    {
-        $category = $this->getCategories()->get((int) $id);
-
-        if (!$category) {
-            return [(int) $id => $id];
-        }
-
-        $path    = array_reverse($category->getPath(), true);
-        $path[0] = '1:root'; // Remove root from path
-
-        $segments = [];
-        foreach ($path as $pathId => $pathSegment) {
-            if ($pathId === 0) {
-                continue; // Skip root
-            }
-            $segments[(int) $pathId] = $pathSegment;
-        }
-
-        return $segments;
-    }
-
-    /**
-     * Parse: category alias segment → category ID.
-     * Uses parent category context from $query to find the right child.
-     */
-    public function getCategoryId(string $segment, array $query): int|false
-    {
-        $parent = $this->getCategories(['access' => false]);
-
-        if (isset($query['id'])) {
-            $parent = $parent->get((int) $query['id']);
-        }
-
-        if (!$parent) {
-            return false;
-        }
-
-        foreach ($parent->getChildren() as $child) {
-            if ($child->alias === $segment) {
-                return (int) $child->id;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Build: item ID → alias segment.
-     */
-    public function getItemSegment(string $id, array $query): array
-    {
-        if (str_contains($id, ':')) {
-            [$numericId, $alias] = explode(':', $id, 2);
-            return [(int) $numericId => $alias];
-        }
-
-        $dbQuery = $this->db->createQuery()
-            ->select($this->db->quoteName('alias'))
-            ->from($this->db->quoteName('#__example_items'))
-            ->where($this->db->quoteName('id') . ' = :id')
-            ->bind(':id', $id, ParameterType::INTEGER);
-        $this->db->setQuery($dbQuery);
-
-        return [(int) $id => $this->db->loadResult() ?: $id];
-    }
-
-    /**
-     * Parse: item alias → item ID.
-     * Scoped by category (catid) from query for disambiguation.
-     */
-    public function getItemId(string $segment, array $query): int|false
-    {
-        $dbQuery = $this->db->createQuery()
-            ->select($this->db->quoteName('id'))
-            ->from($this->db->quoteName('#__example_items'))
-            ->where($this->db->quoteName('alias') . ' = :alias')
-            ->bind(':alias', $segment);
-
-        // Scope by category if available
-        if (!empty($query['catid'])) {
-            $catid = (int) $query['catid'];
-            $dbQuery->where($this->db->quoteName('catid') . ' = :catid')
-                ->bind(':catid', $catid, ParameterType::INTEGER);
-        }
-
-        $this->db->setQuery($dbQuery);
-
-        return (int) $this->db->loadResult() ?: false;
-    }
-
-    /**
-     * Get category tree with caching.
-     */
-    private function getCategories(array $options = []): CategoryInterface
-    {
-        return $this->categoryFactory->createCategory($options);
-    }
-}
-```
-
-### URL Examples
-
-Given menu item "Items" pointing to `view=items`:
-
-| Internal URL | SEF URL | Why |
-|-------------|---------|-----|
-| `view=items` | `/items` | Menu item match — no extra segments |
-| `view=item&id=5` | `/items/my-article` | Child of items, alias segment |
-| `view=category&id=3` | `/items/news` | Category alias from tree |
-| `view=item&id=5&catid=3` | `/items/news/my-article` | Category + item path |
-| `view=item&id=5` (no menu) | `/component/example/item/my-article` | NomenuRules fallback |
-
-### RouterViewConfiguration Quick Reference
-
-| Method | Purpose | Example |
-|--------|---------|---------|
-| `setKey('id')` | Query param identifying this view's record | `setKey('id')`, `setKey('catid')` |
-| `setParent($parent, 'catid')` | Parent view + key linking to parent | Item belongs to category |
-| `setNestable()` | Allows hierarchical paths (categories) | `/cat/subcat/subsubcat` |
-| `addLayout('blog')` | Register layout for menu matching | Category blog vs. list |
+For the **3-part router contract** (router class + `RouterServiceInterface` on the extension + `RouterFactory` registration in `services/provider.php`) — without all three, every `Route::_()` call falls back to `?view=` URLs — see `references/gotchas.md`.
 
 ---
 
@@ -1261,6 +1099,92 @@ class Com_ExampleInstallerScript
     }
 }
 ```
+
+---
+
+## Database Schema & Migrations
+
+Joomla components ship two kinds of database files:
+
+1. **Install SQL** — the full schema, executed once on first install. Referenced by `<install><sql><file driver="mysql" charset="utf8">sql/install.mysql.utf8.sql</file></sql></install>` in the manifest.
+2. **Update SQL** — one file per version, executed in order during an upgrade. Referenced by `<update><schemas><schemapath type="mysql">sql/updates/mysql</schemapath></schemas></update>`. Joomla picks files whose name compares greater than the row in `#__schemas` for this extension.
+
+### Install file
+
+**File:** `admin/sql/install.mysql.utf8.sql`
+
+```sql
+CREATE TABLE IF NOT EXISTS `#__example_items` (
+    `id`           INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `asset_id`     INT UNSIGNED NOT NULL DEFAULT 0,
+    `title`        VARCHAR(255) NOT NULL DEFAULT '',
+    `alias`        VARCHAR(255) NOT NULL DEFAULT '',
+    `catid`        INT UNSIGNED NOT NULL DEFAULT 0,
+    `description`  MEDIUMTEXT NULL,
+    `state`        TINYINT     NOT NULL DEFAULT 0,
+    `access`       INT UNSIGNED NOT NULL DEFAULT 1,
+    `language`     CHAR(7)     NOT NULL DEFAULT '*',
+    `ordering`     INT          NOT NULL DEFAULT 0,
+    `checked_out`  INT UNSIGNED NULL,
+    `checked_out_time` DATETIME NULL,
+    `created`      DATETIME    NOT NULL,
+    `created_by`   INT UNSIGNED NOT NULL DEFAULT 0,
+    `modified`     DATETIME    NOT NULL,
+    `modified_by`  INT UNSIGNED NOT NULL DEFAULT 0,
+    `params`       MEDIUMTEXT NULL,
+    `metadata`     TEXT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_alias` (`alias`),
+    KEY `idx_catid_state` (`catid`, `state`),
+    KEY `idx_access` (`access`),
+    KEY `idx_language` (`language`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
+
+**Conventions:**
+
+- Use `#__` as the table prefix placeholder; Joomla replaces it at runtime with the configured prefix.
+- `id` is `INT UNSIGNED AUTO_INCREMENT PRIMARY KEY`.
+- Standard columns (`asset_id`, `state`, `access`, `language`, `ordering`, `checked_out`, `checked_out_time`, `created`, `created_by`, `modified`, `modified_by`, `params`, `metadata`) follow core conventions so list models, the workflow, and ACL "just work".
+- `CREATE TABLE IF NOT EXISTS` so reinstall is idempotent. Index every column you'll filter on.
+- Charset `utf8mb4` + collation `utf8mb4_unicode_ci` — match core. Filename ends `.mysql.utf8.sql` even though the actual charset is `utf8mb4` (legacy filename convention).
+
+If you target PostgreSQL too, ship a parallel `sql/install.postgresql.utf8.sql` and add a second `<file driver="postgresql">…</file>` entry.
+
+### Update files
+
+**Directory:** `admin/sql/updates/mysql/` (one file per version, named `X.Y.Z.sql`)
+
+```
+admin/sql/updates/mysql/
+├── 1.0.1.sql
+├── 1.1.0.sql
+└── 2.0.0.sql
+```
+
+**`admin/sql/updates/mysql/1.1.0.sql`** — only the delta from 1.0.x:
+
+```sql
+ALTER TABLE `#__example_items`
+    ADD COLUMN `summary` VARCHAR(500) NOT NULL DEFAULT '' AFTER `description`,
+    ADD COLUMN `featured` TINYINT(1) NOT NULL DEFAULT 0 AFTER `state`;
+
+CREATE INDEX `idx_featured_state` ON `#__example_items` (`featured`, `state`);
+```
+
+**Conventions and pitfalls:**
+
+- **DDL only.** Update SQL files are for `ALTER TABLE`, `CREATE INDEX`, `CREATE TABLE`, and similar schema mutations. They are NOT the place for `INSERT`/`UPDATE`/`DELETE` against existing rows — that belongs in the install script's `update()` / `postflight()` PHP, where you can branch on `$type` and read the previous version.
+- **Idempotent statements only.** A user might be on 1.0.5 upgrading to 2.0.0; Joomla executes 1.1.0.sql, 2.0.0.sql in order. Make each statement safe to re-run: prefer `ALTER TABLE … ADD COLUMN IF NOT EXISTS …` (MySQL 8+) or guard with the install-script PHP. The bare `ADD COLUMN` form will throw on a column that already exists.
+- **One file per release tag.** The filename must equal the version number you'll set in the `<version>` tag of the manifest at the time you ship that file. Joomla compares using PHP's `version_compare()`.
+- **Don't edit shipped files.** Once a file has gone out the door (someone has 1.1.0.sql in their database under `#__schemas`), do not change it — ship a 1.1.1.sql with the additional change.
+- **No rollback.** Joomla has no built-in `down` migration. If you need to revert, ship a forward-only fix in the next version.
+
+### Schema tracking
+
+Joomla records the latest applied schema version per extension in `#__schemas` (a `version_id`/`extension_id` pair pointing at `#__extensions`). On every install/update, Joomla reads this row, runs every update SQL file with a name `>` than the row, and writes back the highest version applied. You don't manage this table yourself — keep update filenames and `<version>` in sync and Joomla handles the rest.
+
+For data migrations (UPDATE/INSERT on existing rows), use the `update()` and `postflight()` hooks of the install script — see the [Install/Update Script](#installupdate-script) section above for the full pattern.
 
 ---
 

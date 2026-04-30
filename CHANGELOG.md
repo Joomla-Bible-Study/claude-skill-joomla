@@ -21,12 +21,21 @@ All notable changes to the Joomla skill are documented here. The format follows 
 - `references/testing.md` — extracted PHPUnit + Jest patterns including real-CMS bootstrap and four high-stakes test gotchas.
 - `references/gotchas.md` — extracted hard-won J5/J6 pitfalls (controller parents, routing, WAM, Bootstrap 5.3 dark mode, modal cleanup, `getStoreId()`, etc.).
 - Quick Start now lists the four new cross-cutting references alongside the existing `component.md` / `module.md` / `plugin.md` / `library.md` set.
+- `references/component-router.md` — extracted the 304-line Router (SEF URLs) walkthrough from `references/component.md` so it loads on demand. `component.md` keeps a short stub at the same anchor.
+- `references/component.md` — new **Language Files** section with `en-GB.com_<element>.ini` / `.sys.ini` examples, key-naming conventions, and a note on plural/script-registered strings. Closes the gap flagged in #2 where the manifest declared `<languages>` but no `.ini` content was ever shown.
+- `references/component.md` — new **Database Schema & Migrations** section with `sql/install.mysql.utf8.sql` example (standard core columns, indexes, charset), `sql/updates/mysql/X.Y.Z.sql` per-version delta example, the DDL-only / idempotent / no-rollback rules, and the `#__schemas` tracking explanation.
+- `references/component.md` — new **Other View Types** subsection at the end of View Patterns covering `JsonView`, `RawView` (via `format=raw`), and `FeedView`, with a cross-link to the Webservices API section for JSON:API.
 
 ### Changed
 - `marketplace.json` now uses an explicit GitHub object source pinned to `v0.1.0` (`{"source":"github","repo":"...","ref":"v0.1.0"}`) instead of a relative `./` path. This means `/plugin update` only delivers a new version once the `ref` is bumped on `main`, so audit work in progress on `develop` doesn't reach end users prematurely.
 - `SKILL.md` PHP requirement headline updated from "8.2+ (Joomla 6 minimum), 8.3+ recommended" to "8.3+ minimum and supported, 8.4 recommended" for Joomla 6.x, with a citation to [manual.joomla.org/docs/get-started/technical-requirements](https://manual.joomla.org/docs/get-started/technical-requirements/). The previous wording understated the J6.x minimum.
 - All four in-file PHP-version code examples bumped from 8.2 → 8.3 to match the J6.x floor (changelog `<note>`, update-server `<php_minimum>`, install-script `$minimumPhp`, `composer.json` `php` constraint). The `$minimumJoomla` example value is unchanged because it declares which Joomla versions the extension supports — independent of PHP — and a J6-native extension that also supports J5.x must still pin PHP to 8.3.0 (the highest supported-Joomla floor).
 - `SKILL.md` shrunk from 3594 to ~1180 fewer lines by replacing the in-file Editor API, Form Fields, Testing, and Common Gotchas sections with short pointer stubs that name the topics covered. Reduces the per-load token cost without losing any content (full text preserved in the new `references/*.md` files).
+- `references/component.md` Table of Contents updated to reflect the new sections (Language Files, Database Schema & Migrations, Other View Types) and the Router stub pointing at `component-router.md`.
+
+### Fixed
+- `references/component.md` — `\Namespace\Component\Example\…` typos in two `@var` type-hint comments (List and Edit views) replaced with `\Vendor\…` so IDEs resolve the model class correctly.
+- `references/component.md` — `CustomlistField` example was calling `HTMLHelper::_('select.option', …)` without importing `Joomla\CMS\HTML\HTMLHelper`. Added the missing `use` statement so the example runs as-is.
 
 ## [0.1.0] — 2026-04-29
 
