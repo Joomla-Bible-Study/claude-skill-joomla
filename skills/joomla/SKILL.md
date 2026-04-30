@@ -228,6 +228,13 @@ Cross-cutting references (loaded on demand):
 - `references/testing.md` — PHPUnit + Jest patterns with real Joomla CMS classes
 - `references/gotchas.md` — Hard-won J5/J6 pitfalls (controllers, routing, WAM, dark mode, etc.)
 
+Shared cross-extension references (linked from the per-type files above):
+- `references/manifest.md` — Universal manifest elements (`<extension>` root, metadata, `<files>`, `<media>`, `<languages>`, `<scriptfile>`, `<update>` / `<updateservers>`)
+- `references/install-script.md` — Lifecycle hooks (`preflight`/`install`/`update`/`postflight`/`uninstall`) shared by component/module/plugin/library
+- `references/language-files.md` — Filename conventions, key prefixes per type, plurals, `Text::script()` JS registration
+- `references/service-provider.md` — `ServiceProviderInterface` pattern + per-type binding table (component/module/plugin)
+- `references/component-router.md` — Router class + `RouterServiceInterface` + `RouterFactory` 3-part contract and SEF rules
+
 ## Core Architecture Principles
 
 ### 1. PSR-4 Namespaces (Everything Lives in src/)
@@ -267,7 +274,7 @@ Case sensitivity matters on Linux. Directory names and class names must match ex
 
 ### 2. Service Provider (The Modern Entry Point)
 
-Every extension has `services/provider.php` — this is how Joomla discovers and bootstraps the extension through its DI container.
+Every extension has `services/provider.php` — this is how Joomla discovers and bootstraps the extension through its DI container. The wrapping pattern (`ServiceProviderInterface` + anonymous class + `register()`) is shared across components, modules, and plugins; for the universal pattern, the per-type binding table, and the common DI pitfalls see [`references/service-provider.md`](references/service-provider.md). The example below is the **component** flavor — it registers `MVCFactory`, `ComponentDispatcherFactory`, `RouterFactory`, and (when applicable) `CategoryFactory`, then binds `ComponentInterface`.
 
 **Component service provider pattern:**
 ```php
@@ -547,6 +554,8 @@ Version-numbered files are executed sequentially during updates.
 
 ### 8. Language Files
 
+The filename / key-prefix / plural / `Text::script()` JS-registration conventions are **shared across every extension type** (component / module / plugin / library); the full reference lives in [`references/language-files.md`](references/language-files.md). The example below uses the **component** prefix (`COM_`); modules use `MOD_`, plugins `PLG_<GROUP>_<ELEMENT>_`, libraries `LIB_`.
+
 **Format:** INI files with `COMPONENT_PREFIX_KEY="Value"` pattern.
 
 ```ini
@@ -600,7 +609,7 @@ $wa->useScript('com_mycomponent.admin.script');
 
 ### 10. Manifest XML
 
-Read `references/component.md` for the full manifest template. Key elements:
+For the **universal** manifest elements (`<extension>` root attributes, metadata, `<files>`, `<media>`, `<languages>`, `<scriptfile>`, `<update>` / `<updateservers>`) read [`references/manifest.md`](references/manifest.md). For the **component-specific** template (the `<install>` SQL block, `<update><schemas>`, the `<administration>` block with `<menu>` / `<submenu>`) read [`references/component.md`](references/component.md). Key elements:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -986,15 +995,16 @@ The file must be named `filter_{view}.xml` (e.g., `filter_items.xml` for the `it
 
 **File:** `mycomponent.script.php`
 
-The script class runs during install, update, and uninstall. Critical for DML operations (INSERT, UPDATE, DELETE) that can't go in SQL update files (which only run DDL).
+The script class runs during install, update, and uninstall. Critical for DML operations (INSERT, UPDATE, DELETE) that can't go in SQL update files (which only run DDL). The lifecycle hooks and class-naming conventions are **shared with modules and plugins** — for the full hook signatures, the class-name table for component/module/plugin, and the DDL-vs-DML rule see [`references/install-script.md`](references/install-script.md). The component-flavored example below uses the canonical `Log::add(..., 'jerror')` pattern from that reference for preflight failure surfacing.
 
 ```php
 <?php
 
 \defined('_JEXEC') or die;
 
-use Joomla\CMS\Installer\InstallerAdapter;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Installer\InstallerAdapter;
+use Joomla\CMS\Log\Log;
 
 class Com_MyComponentInstallerScript
 {
@@ -1005,9 +1015,7 @@ class Com_MyComponentInstallerScript
     {
         // Runs BEFORE install/update. Return false to abort.
         if (version_compare(PHP_VERSION, $this->minimumPhp, '<')) {
-            $adapter->getParent()->abort(
-                "This extension requires PHP {$this->minimumPhp}+"
-            );
+            Log::add("PHP {$this->minimumPhp}+ required", Log::ERROR, 'jerror');
             return false;
         }
 
