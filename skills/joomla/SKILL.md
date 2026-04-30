@@ -693,7 +693,7 @@ Joomla displays changelogs in the Extensions → Manage view, linked per version
             <item>Removed legacy import format</item>
         </remove>
         <note>
-            <item>Requires PHP 8.2+</item>
+            <item>Requires PHP 8.3+</item>
         </note>
     </changelog>
 </changelogs>
@@ -741,7 +741,7 @@ The update server tells Joomla where to check for new versions of your extension
             <tag>stable</tag>
         </tags>
         <targetplatform name="joomla" version="5\.[0-9]+" />
-        <php_minimum>8.2.0</php_minimum>
+        <php_minimum>8.3.0</php_minimum>
         <sha256>abc123...</sha256>
         <sha384>def456...</sha384>
         <sha512>ghi789...</sha512>
@@ -992,8 +992,8 @@ use Joomla\CMS\Factory;
 
 class Com_MyComponentInstallerScript
 {
-    protected string $minimumPhp = '8.2.0';
-    protected string $minimumJoomla = '5.0.0';
+    protected string $minimumPhp = '8.3.0';     // Joomla 6.x floor; covers J5.3+ too
+    protected string $minimumJoomla = '5.0.0';   // Earliest Joomla version this extension supports
 
     public function preflight(string $type, InstallerAdapter $adapter): bool
     {
@@ -2178,7 +2178,7 @@ Joomla extensions that need third-party PHP libraries use Composer. The `compose
     "license": "GPL-2.0-or-later",
     "minimum-stability": "stable",
     "require": {
-        "php": ">=8.2",
+        "php": ">=8.3",
         "joomla/framework": "^3.0"
     },
     "require-dev": {
