@@ -504,9 +504,9 @@ Joomla has strict naming that connects everything automatically:
 | Edit template | `tmpl/{entity}/edit.php` | `tmpl/booking/edit.php` |
 | List template | `tmpl/{entity}s/default.php` | `tmpl/bookings/default.php` |
 
-Some projects use a prefix on entity names (e.g., `CwmBooking` for CWM components). This is optional but helps avoid naming collisions with other extensions.
+Some projects use a vendor prefix on entity names (e.g., `AcmeBooking` instead of plain `Booking`). This is optional but helps avoid naming collisions with other extensions.
 
-The view name in the URL (`&view=cwmmessages`) must match the View directory name (case-insensitive on the URL side, but the directory must match the class namespace).
+The view name in the URL (e.g., `&view=bookings`) must match the View directory name (case-insensitive on the URL side, but the directory must match the class namespace).
 
 ### 7. Database Patterns
 
@@ -2387,7 +2387,7 @@ When working on a Joomla project, check whether the project has its own `CLAUDE.
 
 Common patterns seen in production Joomla 5+ components:
 
-- **Entity prefixes** — Some projects prefix entity names to avoid collisions (e.g., `Cwm` prefix in CWM components, `Eb` in EventBooking). Follow the project's existing convention.
+- **Entity prefixes** — Some projects prefix entity names to avoid collisions (e.g., a `<Vendor>` prefix on every Model/View/Table class). Follow the project's existing convention.
 - **Plugin groups** — Real components typically ship with several plugin types: content, finder (Smart Search), schemaorg (structured data), system, task (scheduled jobs), and webservices (REST API).
 - **Module variants** — Both admin-side and site-side modules in `modules/admin/` and `modules/site/`.
 - **Build tooling** — Composer for PHP dependencies + npm for JS/CSS asset compilation. Look for `composer.json` and `package.json` at the project root.

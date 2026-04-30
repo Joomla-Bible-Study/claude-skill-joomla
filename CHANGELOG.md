@@ -28,6 +28,9 @@ All notable changes to the Joomla skill are documented here. The format follows 
 - All four in-file PHP-version code examples bumped from 8.2 → 8.3 to match the J6.x floor (changelog `<note>`, update-server `<php_minimum>`, install-script `$minimumPhp`, `composer.json` `php` constraint). The `$minimumJoomla` example value is unchanged because it declares which Joomla versions the extension supports — independent of PHP — and a J6-native extension that also supports J5.x must still pin PHP to 8.3.0 (the highest supported-Joomla floor).
 - `SKILL.md` shrunk from 3594 to ~1180 fewer lines by replacing the in-file Editor API, Form Fields, Testing, and Common Gotchas sections with short pointer stubs that name the topics covered. Reduces the per-load token cost without losing any content (full text preserved in the new `references/*.md` files).
 
+### Fixed
+- Removed brand-specific references (CWM / Proclaim / EventBooking) from `SKILL.md` and `references/module.md`. The skill is generic Joomla guidance and shouldn't lean on specific third-party extension code or naming conventions as canonical examples. Replaced with vendor-neutral placeholders (`<Vendor>`, `Acme`, generic `bookings`/`items`) and a generic note about projects shipping admin + site modules in one source tree. The `Joomla-Bible-Study/claude-skill-joomla` GitHub URL stays — that's the skill's own home, not borrowed code.
+
 ## [0.1.0] — 2026-04-29
 
 ### Added

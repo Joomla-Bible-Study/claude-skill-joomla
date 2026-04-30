@@ -275,4 +275,4 @@ For admin-side modules, the structure is identical but:
   And the Dispatcher lives under the `Administrator` sub-namespace.
 - Placed in `administrator/modules/` when installed
 
-**Proclaim example**: The Proclaim project has modules under both `modules/admin/` and `modules/site/` in its development repo.
+In practice, larger Joomla projects often ship modules under both `modules/admin/` and `modules/site/` in the same source tree, so the build can package admin and site variants from one repo.
