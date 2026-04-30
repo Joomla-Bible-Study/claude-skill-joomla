@@ -14,7 +14,7 @@
 11. [Custom Form Fields](#custom-form-fields)
 12. [Router (SEF URLs)](#router-sef-urls) — full walkthrough in [`component-router.md`](component-router.md)
 13. [Dispatcher](#dispatcher)
-14. [Install/Update Script](#installupdate-script)
+14. [Install/Update Script](#installupdate-script) — full walkthrough in [`install-script.md`](install-script.md) (shared with module/plugin)
 15. [Database Schema & Migrations](#database-schema--migrations)
 16. [Component Options (config.xml)](#component-options-configxml)
 17. [Filter Form (Searchtools)](#filter-form-searchtools)
@@ -1018,102 +1018,15 @@ class Dispatcher extends ComponentDispatcher
 
 ## Install/Update Script
 
-The install system has two halves and this section covers one of them:
+The `<scriptfile>` PHP class is the **PHP half** of the install system: lifecycle hooks (`preflight`, `install`, `update`, `postflight`, `uninstall`) for environment checks, DML data migrations, filesystem work, and uninstall cleanup. The **same lifecycle is shared by modules and plugins** — only the script-class name and manifest path differ. The full pattern, hook signatures, class-naming table for component / module / plugin, complete example, and skeletons live in [`references/install-script.md`](install-script.md).
 
-- **This section — PHP lifecycle hooks.** `<scriptfile>` PHP that runs at `preflight` / `install` / `update` / `postflight` / `uninstall`. Use it for environment checks (PHP/Joomla minimum), DML data migrations (UPDATE / INSERT / DELETE on existing rows), filesystem work, and anything else that needs to branch on `$type` or read the previous version.
-- **Schema files — DDL.** Pure SQL (`CREATE TABLE`, `ALTER TABLE`, `CREATE INDEX`) lives in `sql/install.mysql.utf8.sql` and per-version `sql/updates/mysql/X.Y.Z.sql`. Joomla executes these automatically based on `#__schemas`. See [Database Schema & Migrations](#database-schema--migrations) for the file layout, conventions, and pitfalls.
-
-Don't put schema mutations in the install script's PHP — Joomla's update flow runs schema files first, then the script's `update()`/`postflight()`. Putting an `ALTER TABLE` in `postflight()` works on a fresh install but races on partial upgrades. Don't put data migrations in the SQL files either — they're meant to be re-runnable DDL.
-
-**File:** `mycomponent.script.php` (referenced in manifest as `<scriptfile>`)
-
-```php
-<?php
-
-\defined('_JEXEC') or die;
-
-use Joomla\CMS\Factory;
-use Joomla\CMS\Installer\InstallerAdapter;
-use Joomla\CMS\Log\Log;
-
-class Com_ExampleInstallerScript
-{
-    protected string $minimumPhp = '8.3.0';     // Joomla 6.x floor; covers J5.3+ too
-    protected string $minimumJoomla = '5.0.0';   // Earliest Joomla version this extension supports
-
-    /**
-     * Runs BEFORE install/update. Return false to abort.
-     */
-    public function preflight(string $type, InstallerAdapter $adapter): bool
-    {
-        if (version_compare(PHP_VERSION, $this->minimumPhp, '<')) {
-            Log::add("PHP {$this->minimumPhp}+ required", Log::ERROR, 'jerror');
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Runs on fresh install only.
-     */
-    public function install(InstallerAdapter $adapter): bool
-    {
-        // Insert default data, create directories, etc.
-        return true;
-    }
-
-    /**
-     * Runs on update only.
-     */
-    public function update(InstallerAdapter $adapter): bool
-    {
-        return true;
-    }
-
-    /**
-     * Runs AFTER install/update.
-     * $type is 'install', 'update', or 'discover_install'.
-     */
-    public function postflight(string $type, InstallerAdapter $adapter): void
-    {
-        if ($type === 'update') {
-            $this->migrateData($adapter);
-        }
-    }
-
-    /**
-     * Runs on uninstall. Clean up related records, files, etc.
-     */
-    public function uninstall(InstallerAdapter $adapter): bool
-    {
-        return true;
-    }
-
-    /**
-     * DML migrations that can't go in SQL update files.
-     * For DDL changes (ALTER TABLE etc.) ship a sql/updates/mysql/X.Y.Z.sql instead —
-     * see the "Database Schema & Migrations" section.
-     */
-    private function migrateData(InstallerAdapter $adapter): void
-    {
-        $db = Factory::getContainer()->get('DatabaseDriver');
-
-        // Example: migrate data from old column to new column
-        $query = $db->createQuery()
-            ->update($db->quoteName('#__example_items'))
-            ->set($db->quoteName('new_column') . ' = ' . $db->quoteName('old_column'))
-            ->where($db->quoteName('new_column') . ' = ' . $db->quote(''));
-        $db->setQuery($query)->execute();
-    }
-}
-```
+For DDL changes (`CREATE TABLE`, `ALTER TABLE`, `CREATE INDEX`) — the **other half** of the install system — see the next section.
 
 ---
 
 ## Database Schema & Migrations
 
-This is the **DDL half** of the install system. The PHP half — environment checks and DML data migrations — lives in [`Install/Update Script`](#installupdate-script) above. Schema files run *before* the install script's `update()` / `postflight()` hooks, so don't depend on data the script will set later.
+This is the **DDL half** of the install system. The PHP half — environment checks and DML data migrations — lives in [`references/install-script.md`](install-script.md) (cross-extension reference shared by component, module, and plugin). Schema files run *before* the install script's `update()` / `postflight()` hooks, so don't depend on data the script will set later.
 
 Joomla components ship two kinds of database files:
 
