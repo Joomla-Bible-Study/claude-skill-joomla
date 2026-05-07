@@ -1,13 +1,14 @@
 {
   "name": "joomla",
-  "version": "0.2.0",
-  "description": "Joomla 5+ / 6 extension development skill — components, modules, plugins, templates with modern MVC, PSR-4 namespaces, DI, and service providers.",
+  "version": "0.3.0",
+  "description": "Joomla 5+ / 6 / 7 extension development skill — components, modules, plugins, libraries, templates with modern MVC, PSR-4 namespaces, DI, and service providers.",
   "author": {
     "name": "Brent Cordis",
     "url": "https://github.com/bcordis"
   },
   "homepage": "https://github.com/Joomla-Bible-Study/claude-skill-joomla",
   "repository": "https://github.com/Joomla-Bible-Study/claude-skill-joomla",
+  "bugs": "https://github.com/Joomla-Bible-Study/claude-skill-joomla/issues",
   "license": "GPL-2.0-or-later",
-  "keywords": ["joomla", "joomla5", "joomla6", "php", "cms", "claude-code", "skill"]
+  "keywords": ["joomla", "joomla5", "joomla6", "joomla7", "php", "cms", "mvc", "extension-development", "claude-code", "skill"]
 }

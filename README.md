@@ -37,8 +37,12 @@ Reference files in `skills/joomla/references/` provide deep-dive guidance, loade
 
 **Topical deep-dives:**
 
+- `coding-standards.md` — PSR-12 / PHPDoc / ESLint / PHPCS conventions
+- `component-advanced.md` — toolbar API, batch, ordering, tags, versioning, workflow, webservices, mail templates, dashboards, custom rules
 - `editor-api.md` — JoomlaEditor JS API + XTD button surface
 - `form-fields.md` — built-in field types + custom-field authoring
+- `menu-items.md` — site-view menu item type XML (request fields, params, useglobal, multi-layout)
+- `packaging.md` — manual zip, build scripts, package extensions, include/exclude checklist
 - `testing.md` — PHPUnit + Jest patterns with real-CMS bootstrap
 - `gotchas.md` — hard-won J5/J6 pitfalls (controller parents, routing, WAM, modal cleanup, etc.)
 
