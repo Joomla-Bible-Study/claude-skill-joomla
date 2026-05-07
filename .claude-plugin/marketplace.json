@@ -10,10 +10,10 @@
       "source": {
         "source": "github",
         "repo": "Joomla-Bible-Study/claude-skill-joomla",
-        "ref": "v0.3.0"
+        "ref": "v0.3.1"
       },
       "description": "Joomla 5+ / 6 / 7 extension development skill — components, modules, plugins, libraries, templates with modern MVC, PSR-4 namespaces, DI, and service providers.",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "category": "development",
       "tags": ["joomla", "joomla5", "joomla6", "joomla7", "php", "cms", "mvc", "extension-development"]
     }
