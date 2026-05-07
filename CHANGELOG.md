@@ -8,6 +8,24 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-05-07
+
+Skill discoverability + load-cost optimization. The frontmatter `description` is now under the 1024-char cap so the skill renders fully in the skill picker (was truncating). `SKILL.md` body shrunk a further ~960 lines (~39%) by extracting four self-contained sections to on-demand reference files, and the plugin metadata catches up to the declared J5+/6/7 support window. No content removed; everything moved is preserved verbatim in `references/`.
+
+### Added
+- `references/coding-standards.md` — extracted PSR-12 / PHPDoc / ESLint / PHPCS / inline-comment conventions out of `SKILL.md`. Includes file-header, class, property, method, and deprecated-method docblock examples plus the alignment rules (two-space minimum, blank line before `@return` and `@since`), the ESLint flat-config snippet, JSDoc on exported functions, and `phpcs.xml` template. `SKILL.md` keeps a one-paragraph summary at the same anchor.
+- `references/component-advanced.md` — extracted advanced component-level features (Toolbar API, Batch Processing, Drag-Drop Ordering, Tags Integration, Content Versioning, Workflow Integration, Webservices API Plugin, Mail Templates, Dashboard Views, Custom Form Validation Rules) out of `SKILL.md`. `SKILL.md` keeps a one-paragraph summary listing the topics covered.
+- `references/menu-items.md` — extracted Site Menu Item Types out of `SKILL.md`. Covers discovery rules, the full XML structure (request fields, params, layout/message), the single-item variant, key-element semantics, the `useglobal="true"` cascade, and the multi-layout-per-view convention. `SKILL.md` keeps a one-paragraph summary.
+- `references/packaging.md` — extracted Extension Packaging out of `SKILL.md`. Covers manual `zip` invocations, the `build.sh` pattern (version detection, npm/composer build steps, exclude flags), package extensions (multi-extension manifest), and the include/exclude checklist. `SKILL.md` keeps a one-paragraph summary.
+- Quick Start cross-cutting references list in `SKILL.md` extended with the four new files; README reference list mirrored.
+- `plugin.json` `bugs` field pointing at the issue tracker so consumers have a discoverable bug-report URL.
+
+### Changed
+- `SKILL.md` frontmatter `description` rewritten from 1573 chars (block scalar `|`) to 1014 chars (single quoted string) so the skill listing no longer truncates with "1 description exceeds the per-entry cap." All trigger keywords preserved (J5/J6/J7 aliases, extension types, `provider.php`, manifest XML, scriptfile, install script, the SubscriberInterface/CMSPlugin/Web-Asset-Manager/task/webservices/finder/schemaorg/SEF-router coverage list, and the short-prompt examples like "add a view" / "register web assets" / "override a layout").
+- `SKILL.md` body shrunk from 2454 to 1497 lines (~39% reduction) by replacing the in-file Coding Standards (162 lines), Advanced Component Features (550 lines), Menu Item Types (138 lines), and Extension Packaging (123 lines) sections with one-paragraph pointer summaries. No content lost — full text moved to the four new `references/*.md` files. Reduces per-load token cost without changing the skill's surface.
+- `plugin.json` and `marketplace.json` description bumped from "Joomla 5+ / 6" to "Joomla 5+ / 6 / 7" to match the skill's declared support window, and now mention `libraries` alongside components/modules/plugins/templates.
+- `plugin.json` keywords expanded with `joomla7`, `mvc`, `extension-development`. `marketplace.json` tags expanded from `[joomla, php, cms]` to `[joomla, joomla5, joomla6, joomla7, php, cms, mvc, extension-development]` for marketplace search.
+
 ## [0.2.0] — 2026-04-30
 
 Content audit + Joomla 6.1 alignment release. No breaking changes; tokenized footprint is smaller (`SKILL.md` shrunk by ~1180 lines as Editor API / Form Fields / Testing / Common Gotchas + 5 cross-cutting refs moved to on-demand `references/*.md`). All examples re-verified against `joomla-cms` `6.1-dev` HEAD on 2026-04-30; zero drift across 14 cited permalinks. Closes audit milestone tracked through issues #1–#5, #6, and #11 across 14 merged PRs (#8–#22).
