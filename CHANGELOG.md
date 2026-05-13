@@ -26,7 +26,14 @@ Extends the skill's reach to AI coding tools beyond Claude Code while keeping `s
 
 ### Changed
 - `.gitignore` excludes `dist/` (build output) — source of truth remains `skills/joomla/`.
-- `plugin.json` and `marketplace.json` bumped from `0.3.0` to `0.4.0`; marketplace `ref` updated to `v0.4.0`. (The interim `v0.3.1` tag — see release notes for that tag — corrected only the SKILL.md `description` length and did not bump the manifest version, so the manifest jumps `0.3.0 → 0.4.0` here.)
+- `plugin.json` and `marketplace.json` bumped from `0.3.0` to `0.4.0`; marketplace `ref` updated to `v0.4.0`. (The interim `v0.3.1` tag corrected only the SKILL.md `description` length and did not bump the manifest version — see the `[0.3.1]` entry directly below — so the manifest jumps `0.3.0 → 0.4.0` here.)
+
+## [0.3.1] — 2026-05-07
+
+Patch on top of v0.3.0. The 1014-char description we shipped in v0.3.0 was still over the actual skill-listing cap (`/doctor` continued to flag "1 description exceeds the per-entry cap: joomla:joomla" after upgrading), so this release trims the frontmatter description further to 744 chars. All trigger keywords preserved (J5/J6/J7 aliases, extension types, `provider.php`, manifest XML, scriptfile, install script, the SubscriberInterface/CMSPlugin/Web-Asset-Manager/task/webservices/finder/schemaorg/SEF-router coverage list, and the short-prompt examples). Compressed mostly by collapsing parenthetical sub-lists (`(joomla.asset.json, useScript, useStyle)`, `(RouterServiceInterface, RouterFactory)`) and inlining grouped plugin types.
+
+### Fixed
+- `skills/joomla/SKILL.md` frontmatter `description` shrunk 1014 → 744 chars to fit the actual Claude Code skill-listing cap (the 1024 cap I assumed in v0.3.0 turned out to be lower in practice — `/doctor` kept flagging the entry as truncated). No behavioral change to triggering: the J5/J6/J7 aliases, extension types, all key file/path tokens, and the short-prompt activation examples all remain in the description.
 
 ## [0.3.0] — 2026-05-07
 
