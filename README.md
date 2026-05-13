@@ -37,13 +37,19 @@ Reference files in `skills/joomla/references/` provide deep-dive guidance, loade
 
 **Topical deep-dives:**
 
+- `admin-routing.md` — `task=` vs `view=` URL routing and the checkout pattern preventing concurrent overwrites
 - `coding-standards.md` — PSR-12 / PHPDoc / ESLint / PHPCS conventions
 - `component-advanced.md` — toolbar API, batch, ordering, tags, versioning, workflow, webservices, mail templates, dashboards, custom rules
+- `component-lifecycle.md` — model save flow, `prepareTable()`, `Table::bind()`/`store()`, filter forms, install script, config.xml, site-side differences, service interfaces, AJAX, HTMLHelper services, `showon`, fieldset tabs
+- `database.md` — install / update SQL, `#__` prefix, DDL-vs-DML rule
 - `editor-api.md` — JoomlaEditor JS API + XTD button surface
 - `form-fields.md` — built-in field types + custom-field authoring
+- `layouts.md` — `LayoutHelper::render()`, override priority, sublayouts, key built-in layouts
 - `menu-items.md` — site-view menu item type XML (request fields, params, useglobal, multi-layout)
-- `packaging.md` — manual zip, build scripts, package extensions, include/exclude checklist
+- `packaging.md` — manual zip, build scripts, package extensions, include/exclude checklist, **changelog XML** for the in-admin changelog viewer
 - `testing.md` — PHPUnit + Jest patterns with real-CMS bootstrap
+- `update-server.md` — update server XML, `<targetplatform>` regex, SHA hashes, per-type tweaks
+- `web-assets.md` — `joomla.asset.json` schema, `useStyle`/`useScript`, dependencies
 - `gotchas.md` — hard-won J5/J6 pitfalls (controller parents, routing, WAM, modal cleanup, etc.)
 
 ## Requirements
