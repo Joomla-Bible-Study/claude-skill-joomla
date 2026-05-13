@@ -54,7 +54,7 @@ Reference files in `skills/joomla/references/` provide deep-dive guidance, loade
 
 ## Installation
 
-There are three install paths depending on which Claude product you use.
+There are four install paths — three for Claude products, plus a universal package for other AI coding tools.
 
 ### Option 1 — Claude Code plugin (recommended for Claude Code users)
 
@@ -95,6 +95,25 @@ Or symlink so updates flow in with `git pull`:
 ```bash
 ln -s "$PWD/claude-skill-joomla/skills/joomla" ~/.claude/skills/joomla
 ```
+
+### Option 4 — Other AI coding tools (Cursor, GitHub Copilot, Windsurf, Cline, Aider, Codex)
+
+Each release also ships a `joomla-skill-universal-vX.Y.Z.zip` artifact containing the same Joomla guidance repackaged as project-root rule files for non-Claude tools. One source, one shared `references/` directory.
+
+1. Open the [latest release](https://github.com/Joomla-Bible-Study/claude-skill-joomla/releases/latest).
+2. Download `joomla-skill-universal-vX.Y.Z.zip` and unzip into your Joomla project's root.
+3. Keep only the file(s) for the tool(s) you use (you can delete the rest); leave `references/` in place.
+
+| Your tool                | Files to keep                                       |
+|--------------------------|-----------------------------------------------------|
+| OpenAI Codex / generic   | `AGENTS.md` + `references/`                         |
+| Cursor                   | `.cursor/rules/joomla.mdc` + `references/`          |
+| GitHub Copilot           | `.github/copilot-instructions.md` + `references/`   |
+| Windsurf                 | `.windsurfrules` + `references/`                    |
+| Cline                    | `.clinerules` + `references/`                       |
+| Aider                    | `CONVENTIONS.md` + `references/` (then `aider --read CONVENTIONS.md`) |
+
+Multiple tools can coexist in the same repo — each reads its own file and ignores the others. To rebuild the package locally from a clone of this repo, run `bash scripts/build-universal.sh`; output lands in `dist/universal/`.
 
 ## Usage
 
