@@ -8,6 +8,15 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ## [Unreleased]
 
+## [0.4.1] — 2026-05-13
+
+Workflow-infrastructure patch on top of v0.4.0. Resolves the Node.js 20 deprecation annotation that GitHub Actions surfaced on the v0.4.0 release run ("Node.js 20 actions are deprecated … forced to run with Node.js 24 by default starting June 2nd, 2026"). No skill content, plugin payload, or universal package contents change — both `joomla-skill-v0.4.1.zip` and `joomla-skill-universal-v0.4.1.zip` are byte-equivalent to their `v0.4.0` counterparts except for the version string in `plugin.json` / `marketplace.json`.
+
+### Changed
+- `.github/workflows/release.yml` — `actions/checkout@v4` → `@v6` and `softprops/action-gh-release@v2` → `@v3`. Both are pure runtime upgrades to Node 24 per upstream release notes; no input/output schema changes.
+- `.github/workflows/validate.yml` — `actions/checkout@v4` → `@v6` (validate already ran green against `@v6` on PR #30 before merge).
+- `plugin.json` and `marketplace.json` bumped `0.4.0` → `0.4.1`; marketplace `ref` updated to `v0.4.1`.
+
 ## [0.4.0] — 2026-05-13
 
 Extends the skill's reach to AI coding tools beyond Claude Code while keeping `skills/joomla/` as the single source of truth. No content removed; no Claude-Code-side behavior changed. Same `SKILL.md` + `references/` is now repackaged on each release as a second downloadable ZIP that drops into any Joomla project as project-root rule files for Cursor, GitHub Copilot, Windsurf, Cline, Aider, and AGENTS.md-compatible tools (Codex, Zed, Jules). One canonical maintenance target, six entry files, one shared `references/` directory across all of them.
