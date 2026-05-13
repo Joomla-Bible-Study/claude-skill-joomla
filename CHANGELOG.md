@@ -8,6 +8,20 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ## [Unreleased]
 
+### Added
+- Universal AI-tool package — second release artifact (`joomla-skill-universal-vX.Y.Z.zip`) generated from the same `SKILL.md` + `references/` source, repackaged for AI coding tools other than Claude Code. One file per tool, all sharing one `references/` directory:
+  - `AGENTS.md` — the emerging cross-tool standard (Codex, Cursor 1.0+, Aider, Zed, Jules, …).
+  - `.github/copilot-instructions.md` — GitHub Copilot custom instructions.
+  - `.cursor/rules/joomla.mdc` — Cursor project rule, auto-attaches on `**/*.php`, `**/manifest*.xml`, `**/joomla.asset.json`, `**/provider.php`.
+  - `.windsurfrules` — Windsurf project rules.
+  - `.clinerules` — Cline project rules.
+  - `CONVENTIONS.md` — Aider conventions (load with `aider --read CONVENTIONS.md`).
+- `scripts/build-universal.sh` — generates the universal package from the canonical Claude-skill source. The script strips the Claude-skill YAML frontmatter, rewrites `references/...` link prefixes per target depth, and emits the zip-ready tree under `dist/universal/`. Run locally with `bash scripts/build-universal.sh`.
+- `.github/workflows/release.yml` now produces a second release artifact alongside the existing Claude-Code plugin ZIP and links it from the release body with install guidance for the universal targets.
+
+### Changed
+- `.gitignore` excludes `dist/` (build output) — source of truth remains `skills/joomla/`.
+
 ## [0.3.0] — 2026-05-07
 
 Skill discoverability + load-cost optimization. The frontmatter `description` is now under the 1024-char cap so the skill renders fully in the skill picker (was truncating). `SKILL.md` body shrunk a further ~960 lines (~39%) by extracting four self-contained sections to on-demand reference files, and the plugin metadata catches up to the declared J5+/6/7 support window. No content removed; everything moved is preserved verbatim in `references/`.
