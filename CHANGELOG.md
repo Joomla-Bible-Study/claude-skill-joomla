@@ -8,6 +8,26 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-05-13
+
+Extends the skill's reach to AI coding tools beyond Claude Code while keeping `skills/joomla/` as the single source of truth. No content removed; no Claude-Code-side behavior changed. Same `SKILL.md` + `references/` is now repackaged on each release as a second downloadable ZIP that drops into any Joomla project as project-root rule files for Cursor, GitHub Copilot, Windsurf, Cline, Aider, and AGENTS.md-compatible tools (Codex, Zed, Jules). One canonical maintenance target, six entry files, one shared `references/` directory across all of them.
+
+### Added
+- Universal AI-tool package — second release artifact (`joomla-skill-universal-vX.Y.Z.zip`) generated from the same `SKILL.md` + `references/` source, repackaged for AI coding tools other than Claude Code. One file per tool, all sharing one `references/` directory:
+  - `AGENTS.md` — the emerging cross-tool standard (Codex, Cursor 1.0+, Aider, Zed, Jules, …).
+  - `.github/copilot-instructions.md` — GitHub Copilot custom instructions.
+  - `.cursor/rules/joomla.mdc` — Cursor project rule, auto-attaches on `**/*.php`, `**/manifest*.xml`, `**/joomla.asset.json`, `**/provider.php`.
+  - `.windsurfrules` — Windsurf project rules.
+  - `.clinerules` — Cline project rules.
+  - `CONVENTIONS.md` — Aider conventions (load with `aider --read CONVENTIONS.md`).
+- `scripts/build-universal.sh` — generates the universal package from the canonical Claude-skill source. The script strips the Claude-skill YAML frontmatter, rewrites `references/...` link prefixes per target depth (`references/`, `../references/`, `../../references/`) so links resolve from each file's location, and emits the zip-ready tree under `dist/universal/`. Run locally with `bash scripts/build-universal.sh`.
+- `.github/workflows/release.yml` now produces a second release artifact (~204 KB) alongside the existing Claude-Code plugin ZIP and links it from the release body with per-tool install guidance.
+- `README.md` Option 4 — install matrix for the six non-Claude AI coding tools.
+
+### Changed
+- `.gitignore` excludes `dist/` (build output) — source of truth remains `skills/joomla/`.
+- `plugin.json` and `marketplace.json` bumped from `0.3.0` to `0.4.0`; marketplace `ref` updated to `v0.4.0`. (The interim `v0.3.1` tag corrected only the SKILL.md `description` length and did not bump the manifest version — see the `[0.3.1]` entry directly below — so the manifest jumps `0.3.0 → 0.4.0` here.)
+
 ## [0.3.1] — 2026-05-07
 
 Patch on top of v0.3.0. The 1014-char description we shipped in v0.3.0 was still over the actual skill-listing cap (`/doctor` continued to flag "1 description exceeds the per-entry cap: joomla:joomla" after upgrading), so this release trims the frontmatter description further to 744 chars. All trigger keywords preserved (J5/J6/J7 aliases, extension types, `provider.php`, manifest XML, scriptfile, install script, the SubscriberInterface/CMSPlugin/Web-Asset-Manager/task/webservices/finder/schemaorg/SEF-router coverage list, and the short-prompt examples). Compressed mostly by collapsing parenthetical sub-lists (`(joomla.asset.json, useScript, useStyle)`, `(RouterServiceInterface, RouterFactory)`) and inlining grouped plugin types.
