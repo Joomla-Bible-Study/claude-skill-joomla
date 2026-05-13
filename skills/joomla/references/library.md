@@ -14,6 +14,7 @@ Libraries are shared PHP code packages installed under `libraries/` that any oth
 9. [Packaging a Library](#packaging-a-library)
 10. [Including Libraries in a Package Extension](#including-libraries-in-a-package-extension)
 11. [Multiple Libraries Under a Vendor](#multiple-libraries-under-a-vendor)
+12. [Composer for Extensions](#composer-for-extensions) — `composer.json`, bundled vendor, npm
 
 ## When to Use a Library
 
@@ -23,7 +24,7 @@ Libraries are shared PHP code packages installed under `libraries/` that any oth
 
 **Do NOT use a library when:**
 - The code is only used by one component — put it in that component's `Helper/` or `Service/` namespace instead
-- You just need Composer packages — bundle them in `libraries/vendor/` inside your component (see Libraries and Composer section in SKILL.md)
+- You just need Composer packages — bundle them in `libraries/vendor/` inside your component (see [Composer for Extensions](#composer-for-extensions) below)
 
 ## Directory Structure
 
@@ -296,3 +297,94 @@ libraries/mylib/src/
 ```
 
 This is simpler if the code always ships together and versions together.
+
+## Composer for Extensions
+
+Joomla extensions that need third-party PHP libraries use Composer. The `composer.json` goes at the extension's project root (not inside `admin/` or `site/`).
+
+```json
+{
+    "name": "vendor/com_mycomponent",
+    "description": "My Joomla Component",
+    "type": "joomla-component",
+    "license": "GPL-2.0-or-later",
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=8.3",
+        "joomla/framework": "^3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "squizlabs/php_codesniffer": "^3.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Vendor\\Component\\MyComponent\\Administrator\\": "admin/src/",
+            "Vendor\\Component\\MyComponent\\Site\\": "site/src/"
+        }
+    },
+    "config": {
+        "vendor-dir": "libraries/vendor"
+    }
+}
+```
+
+Key points:
+
+- `type: "joomla-component"` (or `joomla-plugin`, `joomla-module`) enables Joomla-aware Composer installers.
+- `vendor-dir` — Many Joomla projects put vendor in `libraries/vendor/` rather than the default `vendor/`. This keeps Composer's autoloader inside the extension's library path so it gets included in the installable package. Check the project's existing convention.
+- The PSR-4 autoload block in `composer.json` is for **development tooling** (PHPUnit, static analysis). At runtime, Joomla handles autoloading via the namespace declared in the manifest XML — Composer's autoloader is not loaded by Joomla itself unless you explicitly require it.
+
+### Including bundled libraries in the extension
+
+If your extension ships third-party libraries, include them in the package and load the autoloader:
+
+```php
+// In services/provider.php or your Extension class boot() method
+$vendorPath = JPATH_ADMINISTRATOR . '/components/com_mycomponent/libraries/vendor/autoload.php';
+if (file_exists($vendorPath)) {
+    require_once $vendorPath;
+}
+```
+
+Add the `libraries/` folder to your manifest XML so it gets installed:
+
+```xml
+<administration>
+    <files folder="admin">
+        <folder>libraries</folder>
+        <folder>services</folder>
+        <folder>src</folder>
+        <!-- ... -->
+    </files>
+</administration>
+```
+
+### Common libraries used in Joomla extensions
+
+- **Joomla Framework packages** (`joomla/database`, `joomla/event`, `joomla/input`) — Already provided by Joomla core. Do NOT bundle these; just use them.
+- **League packages** (CSV, OAuth2, Flysystem) — Popular for data import/export and auth.
+- **Symfony components** (Filesystem, HttpClient, Mailer) — Some already in Joomla core; check before bundling duplicates.
+- **GuzzleHttp** — For API integrations. Joomla core includes `joomla/http` but Guzzle is common in extensions needing advanced HTTP features.
+
+### npm and front-end assets
+
+Extensions with custom JavaScript or CSS often use npm for build tooling:
+
+```json
+{
+    "name": "com_mycomponent",
+    "scripts": {
+        "build:css": "sass build/scss/:media/css/",
+        "build:js": "rollup -c",
+        "build": "npm run build:css && npm run build:js",
+        "watch": "npm run build:css -- --watch & npm run build:js -- --watch"
+    },
+    "devDependencies": {
+        "sass": "^1.60",
+        "rollup": "^4.0"
+    }
+}
+```
+
+Compiled assets go into `media/com_mycomponent/` and are registered in `joomla.asset.json` (see [`web-assets.md`](web-assets.md)). Source files typically live in a `build/` directory and are NOT included in the installable package.

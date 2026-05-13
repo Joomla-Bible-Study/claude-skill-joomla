@@ -91,15 +91,13 @@ Docs: https://docs.github.com/copilot/customizing-copilot/about-customizing-gith
 EOF
 
 HEADER_CURSOR="$(mktemp)"
+# Cursor's docs document `globs:` as a comma-separated string, not a YAML
+# array (https://cursor.com/docs/context/rules). Both forms work in practice
+# but the documented form is safer if Cursor tightens its parser.
 cat > "$HEADER_CURSOR" <<'EOF'
 ---
 description: Joomla 5+ / 6 / 7 extension development conventions (components, modules, plugins, libraries, templates)
-globs:
-  - "**/*.php"
-  - "**/manifest*.xml"
-  - "**/joomla.asset.json"
-  - "**/provider.php"
-  - "**/services/provider.php"
+globs: **/*.php, **/manifest*.xml, **/joomla.asset.json, **/provider.php, **/services/provider.php
 alwaysApply: false
 ---
 EOF

@@ -121,3 +121,80 @@ zip pkg_mypackage-1.0.0.zip \
 - Source SCSS/TypeScript files
 - `.env`, credentials, IDE config (`.idea/`, `.vscode/`)
 - `*.map` source map files (unless debugging is needed)
+
+## Changelog XML
+
+Joomla displays changelogs in the Extensions → Manage view, linked per version. To enable this, add a `<changelogurl>` tag to the manifest XML (see [`manifest.md`](manifest.md)) pointing to an XML file hosted publicly. Pair it with the update server (see [`update-server.md`](update-server.md)) so admins can preview changes before installing.
+
+### File structure
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<changelogs>
+    <changelog>
+        <element>com_mycomponent</element>
+        <type>component</type>
+        <version>1.0.0</version>
+        <note>
+            <item>Initial release</item>
+        </note>
+    </changelog>
+    <changelog>
+        <element>com_mycomponent</element>
+        <type>component</type>
+        <version>1.1.0</version>
+        <security>
+            <item>Fixed XSS vulnerability in input fields</item>
+            <item><![CDATA[<a href="https://example.com/advisory/001">Advisory 001</a>]]></item>
+        </security>
+        <fix>
+            <item>Fixed pagination on list views</item>
+            <item>Corrected date format in export</item>
+        </fix>
+        <language>
+            <item>Added Dutch translation</item>
+        </language>
+        <addition>
+            <item>New dashboard widget</item>
+            <item>REST API endpoint for items</item>
+        </addition>
+        <change>
+            <item>Improved search performance</item>
+        </change>
+        <remove>
+            <item>Removed legacy import format</item>
+        </remove>
+        <note>
+            <item>Requires PHP 8.3+</item>
+        </note>
+    </changelog>
+</changelogs>
+```
+
+### Required nodes per entry
+
+`<element>`, `<type>`, `<version>`.
+
+### Supported change type categories
+
+`<security>`, `<fix>`, `<language>`, `<addition>`, `<change>`, `<remove>`, `<note>`. Each contains one or more `<item>` elements.
+
+### HTML in items
+
+Wrap HTML content in CDATA: `<item><![CDATA[<strong>Bold text</strong>]]></item>`.
+
+### Element and type values by extension type
+
+| Extension Type | `<element>` | `<type>` |
+|---------------|-------------|----------|
+| Component | `com_mycomponent` | `component` |
+| Module | `mod_mymodule` | `module` |
+| Plugin | `plg_group_name` | `plugin` |
+| Template | `tpl_mytemplate` | `template` |
+| Library | `lib_mylib` | `library` |
+| Package | `pkg_mypackage` | `package` |
+
+### Hosting
+
+The `<changelogurl>` tag must not have spaces or line breaks around the URL. Host the changelog XML on a publicly accessible URL (GitHub raw, your project website, etc.).
+
