@@ -8,6 +8,10 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-05-13
+
+Extends the skill's reach to AI coding tools beyond Claude Code while keeping `skills/joomla/` as the single source of truth. No content removed; no Claude-Code-side behavior changed. Same `SKILL.md` + `references/` is now repackaged on each release as a second downloadable ZIP that drops into any Joomla project as project-root rule files for Cursor, GitHub Copilot, Windsurf, Cline, Aider, and AGENTS.md-compatible tools (Codex, Zed, Jules). One canonical maintenance target, six entry files, one shared `references/` directory across all of them.
+
 ### Added
 - Universal AI-tool package — second release artifact (`joomla-skill-universal-vX.Y.Z.zip`) generated from the same `SKILL.md` + `references/` source, repackaged for AI coding tools other than Claude Code. One file per tool, all sharing one `references/` directory:
   - `AGENTS.md` — the emerging cross-tool standard (Codex, Cursor 1.0+, Aider, Zed, Jules, …).
@@ -16,11 +20,13 @@ All notable changes to the Joomla skill are documented here. The format follows 
   - `.windsurfrules` — Windsurf project rules.
   - `.clinerules` — Cline project rules.
   - `CONVENTIONS.md` — Aider conventions (load with `aider --read CONVENTIONS.md`).
-- `scripts/build-universal.sh` — generates the universal package from the canonical Claude-skill source. The script strips the Claude-skill YAML frontmatter, rewrites `references/...` link prefixes per target depth, and emits the zip-ready tree under `dist/universal/`. Run locally with `bash scripts/build-universal.sh`.
-- `.github/workflows/release.yml` now produces a second release artifact alongside the existing Claude-Code plugin ZIP and links it from the release body with install guidance for the universal targets.
+- `scripts/build-universal.sh` — generates the universal package from the canonical Claude-skill source. The script strips the Claude-skill YAML frontmatter, rewrites `references/...` link prefixes per target depth (`references/`, `../references/`, `../../references/`) so links resolve from each file's location, and emits the zip-ready tree under `dist/universal/`. Run locally with `bash scripts/build-universal.sh`.
+- `.github/workflows/release.yml` now produces a second release artifact (~204 KB) alongside the existing Claude-Code plugin ZIP and links it from the release body with per-tool install guidance.
+- `README.md` Option 4 — install matrix for the six non-Claude AI coding tools.
 
 ### Changed
 - `.gitignore` excludes `dist/` (build output) — source of truth remains `skills/joomla/`.
+- `plugin.json` and `marketplace.json` bumped from `0.3.0` to `0.4.0`; marketplace `ref` updated to `v0.4.0`. (The interim `v0.3.1` tag — see release notes for that tag — corrected only the SKILL.md `description` length and did not bump the manifest version, so the manifest jumps `0.3.0 → 0.4.0` here.)
 
 ## [0.3.0] — 2026-05-07
 
