@@ -332,6 +332,26 @@ In `joomla.asset.json`, do **NOT** include `css/` or `js/` subdirectories in ass
 
 Joomla maps `com_mycomponent/admin.css` → `media/com_mycomponent/css/admin.css` automatically. Including the subdirectory (`com_mycomponent/css/admin.css`) causes a 404.
 
+## WAM Asset Naming Collisions
+
+Asset `name:` values in `joomla.asset.json` are the lookup key for `$wa->useStyle()` / `$wa->useScript()`. The Joomla convention is `com_<extension>.<variant>` (or `mod_*` / `plg_*.*` / `vendor.*`):
+
+```json
+{
+  "name": "com_mycomponent.admin",
+  "type": "style",
+  "uri": "com_mycomponent/admin.css"
+}
+```
+
+```php
+$wa->useStyle('com_mycomponent.admin');  // must match name: exactly
+```
+
+If the name doesn't exist, `useStyle()` / `useScript()` throw `UnknownAssetException` — loud and fatal, easy to spot.
+
+The silent failure mode is **name collisions**. Asset names are scoped per type (`script`, `style`) and shared across the whole Joomla install — no per-extension namespace. If two `joomla.asset.json` files (or a layout / template registry) both register a `style` named `vendor.fancybox`, `WebAssetRegistry::add()` overwrites the first registration with the second (`libraries/src/WebAsset/WebAssetRegistry.php:171`) and dispatches a `WebAssetRegistry::ASSET_CHANGED` event of type `override`. No exception, no log entry by default. To avoid: prefix vendor / shared assets with the extension name (e.g., `com_mycomponent.fancybox`) to scope them.
+
 ## WAM Non-Standard Paths
 
 Vendor assets stored outside the standard `media/com_*/` structure (e.g., `media/fancybox/`, `media/vendor/`) **cannot use auto-resolution**. Use a full literal path instead:

@@ -84,6 +84,50 @@ public function getDbo()
 
 **Tags NOT used in Joomla project code:** `@author` (prohibited in Joomla-owned code, allowed in third-party extensions), `@category` (rarely used).
 
+### `@since __DEPLOY_VERSION__` for in-flight code
+
+Joomla core uses the literal token `__DEPLOY_VERSION__` in `@since` tags
+when the author doesn't yet know which release the code will ship in.
+The release build substitutes the token with the actual version string
+before the package is archived.
+
+**When to use:** any new class, property, method, or hook added on a
+development branch where the next release number isn't fixed yet — patch
+slips into a minor, minor slips into a major, a hotfix jumps the queue.
+Writing `@since 5.4.0` today and shipping in `5.5.0` next month leaves
+the wrong tag in the codebase forever.
+
+```php
+/**
+ * Method added during the captions epic. Will ship in whatever release
+ * cuts after this branch merges — could be 10.3.4, 10.4.0, or later.
+ *
+ * @return  void
+ *
+ * @since   __DEPLOY_VERSION__
+ */
+public function buildCaptions(): void
+```
+
+**At release time:** the build pipeline rewrites every
+`@since __DEPLOY_VERSION__` to `@since X.Y.Z` (the version being cut)
+across the configured source paths. Look at
+`joomla-cms/build/build.php` for the reference implementation, or in
+cwm-built extensions, see `cwm-release` step that walks
+`versionTracking.substituteTokens` (tracked in cwm-build-tools issue
+[#24](https://github.com/Joomla-Bible-Study/cwm-build-tools/issues/24)).
+
+**When NOT to use:** code where the target version is already locked in
+(a backport to a maintenance branch, a coordinated milestone PR). Use
+the literal version in those cases — the placeholder is for genuine
+"don't know yet" uncertainty, not as a default.
+
+**Common mistake:** committing `__DEPLOY_VERSION__` to a stable / LTS
+branch where the next release is already known. The substitution still
+runs and produces a valid tag, but you've lost the documentary intent
+("this landed in 5.2.0") that `@since` is supposed to carry. If you
+know the version, write it.
+
 ## JavaScript / ESLint
 
 Joomla core uses ESLint flat config (`eslint.config.mjs`) with the Airbnb preset. For extensions, match these conventions:

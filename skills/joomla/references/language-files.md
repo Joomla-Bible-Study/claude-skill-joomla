@@ -52,6 +52,8 @@ The `<languages folder="…">` block in the manifest tells Joomla where to find 
 </languages>
 ```
 
+**The `<languages>` element does not gate runtime loading for components.** Joomla auto-discovers `{admin,site}/language/{locale}/{locale}.com_*.ini` whenever the user's site language matches a present locale, regardless of manifest declarations. The element is primarily about (a) telling the package installer which files to copy from the install zip into the destination tree, and (b) ensuring `.sys.ini` strings render correctly in the Extension Manager dialog at install time. For modules and plugins, Joomla likewise auto-discovers `{module,plugin}/language/{locale}/` files at runtime. So shipping translations under `admin/language/cs-CZ/`, `de-DE/`, `es-ES/` etc. without listing each in `<languages>` is fine — those locales still load when a user's site language matches.
+
 ## `.sys.ini` vs `.ini`
 
 `.sys.ini` is **loaded during install** and by the Extension Manager / Plugin Manager listings. Keep it small — only strings the installer or admin extension-listing UI shows:
