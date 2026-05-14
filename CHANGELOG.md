@@ -8,6 +8,16 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-05-14
+
+**First stable release.** The skill has been in continuous use across the v0.3.x → v0.5.x line and has stabilized: SKILL.md is at its progressive-disclosure form (442 lines, all detail offloaded to `references/`), the universal-package build pipeline ships ZIP artifacts for Claude Code skill installation **and** for AGENTS.md-aware tools (Cursor, Copilot, Windsurf, Cline, Aider), the GitHub Actions release workflow runs on Node 24, and the reference set covers the full Joomla 5+ extension surface (components, modules, plugins, libraries, templates, packaging, update servers, web assets, coding standards, testing, language files, service providers, routers, layouts, form fields, menu items, and the component lifecycle). The 1.0 line commits to backwards-compatible reference layout — extracted reference filenames will not be renamed without a 2.0 bump. This release adds one new subsection on top of v0.5.0: a recommended extended JSDoc convention for JavaScript with explicit provenance disclaimer.
+
+### Added
+- `references/coding-standards.md` § JavaScript / JSDoc (recommended extended convention) — new subsection (~80 lines). Honest provenance disclaimer up top citing a `joomla-cms/build/media_source/` grep (~85% of files carry only a minimal copyright/license header; only 10–28% use full `@since` / `@param` / `@returns`), so readers know this is an *extended* convention rather than a published Joomla rule. Then file-header docblock, class docblock, property/field docblock, method/function docblock, alignment-rules list (mirrors the PHPDoc rules above for visual consistency), `@author` / `@category` exclusion note matching the PHPDoc rule, and a deprecated-function example with `@since` / `@deprecated` / `@see` block.
+
+### Changed
+- `references/coding-standards.md` § JavaScript / ESLint — three small polish edits: added "with the Airbnb preset" mention; flipped `Joomla: true` / `bootstrap: true` to the documented `'readonly'` form for ESLint flat-config globals; reworked the three "Key JavaScript conventions" bullets and added the `.es6.js` (Rollup-transpiled) vs `.es5.js` (ESLint-skipped) extension distinction. The single existing JSDoc example (the `refreshList` snippet) is moved into the new subsection's method/function-docblock slot and expanded with `@throws`, aligned `@param` columns, and the blank-comment-line spacing rules.
+
 ## [0.5.0] — 2026-05-13
 
 Progressive-disclosure refactor + cross-tool ergonomics. `SKILL.md` body shrinks from 1,497 lines to 442 (~70% reduction) by extracting eight self-contained sections into reference files, and the universal-package Cursor target switches its globs frontmatter to the form Cursor's docs document. The Cursor rule drops from 1,504 lines (3× over Cursor's documented 500-line ceiling) to 444 lines, under the recommendation. No content removed; every extracted section is preserved verbatim in `references/`. The same trimming benefits Claude, Copilot, Windsurf, Cline, Aider, and AGENTS.md-aware tools — all of them share the same body, so all of them save tokens per-load.
