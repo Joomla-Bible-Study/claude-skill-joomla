@@ -8,6 +8,13 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ## [Unreleased]
 
+## [1.0.1] — 2026-05-14
+
+Patch release adding one new gotcha to `references/gotchas.md`. Resolves [#35](https://github.com/Joomla-Bible-Study/claude-skill-joomla/issues/35).
+
+### Added
+- `references/gotchas.md` § joomla-field-fancy-select: setValue Replaces, setChoiceByValue Appends — new H2 entry slotted between the existing `Joomla.Text._() Returns Raw Key When Unregistered` and `Batch Task Routing` sections (same JS-runtime / silent-failure neighborhood). Documents how to access the Choices.js wrapper on the `joomla-field-fancy-select` web component (`field.choicesInstance`), the difference between `choices.setValue([...])` (replaces the entire selection) and `choices.setChoiceByValue(value)` (appends), the silent-failure mode this creates when looping over checkboxes calling `setValue([...])` per iteration (only the last entry survives, no console error), the one-line fix, and a DevTools console diagnostic. Caught in production on a Joomla 6 upgrade where the old call site worked against the J5 Choices.js bundle but silently broke on J6.
+
 ## [1.0.0] — 2026-05-14
 
 **First stable release.** The skill has been in continuous use across the v0.3.x → v0.5.x line and has stabilized: SKILL.md is at its progressive-disclosure form (442 lines, all detail offloaded to `references/`), the universal-package build pipeline ships ZIP artifacts for Claude Code skill installation **and** for AGENTS.md-aware tools (Cursor, Copilot, Windsurf, Cline, Aider), the GitHub Actions release workflow runs on Node 24, and the reference set covers the full Joomla 5+ extension surface (components, modules, plugins, libraries, templates, packaging, update servers, web assets, coding standards, testing, language files, service providers, routers, layouts, form fields, menu items, and the component lifecycle). The 1.0 line commits to backwards-compatible reference layout — extracted reference filenames will not be renamed without a 2.0 bump. This release adds one new subsection on top of v0.5.0: a recommended extended JSDoc convention for JavaScript with explicit provenance disclaimer.

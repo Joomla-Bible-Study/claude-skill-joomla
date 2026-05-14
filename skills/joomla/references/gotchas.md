@@ -211,6 +211,29 @@ const translated = Joomla.Text._(key);
 const msg = (translated !== key) ? translated : 'Default Label';
 ```
 
+## joomla-field-fancy-select: setValue Replaces, setChoiceByValue Appends
+
+The `joomla-field-fancy-select` web component wraps Choices.js. Get the wrapper from `field.choicesInstance` (where `field = element.closest('joomla-field-fancy-select')`). The library exposes two selection APIs that look interchangeable but behave very differently on multi-selects:
+
+- `choices.setValue([{value, label}])` — **replaces** the entire current selection with the array
+- `choices.setChoiceByValue(value)` — **appends** to the current selection
+
+Looping over checked checkboxes and calling `setValue([...])` per iteration leaves only the last entry visible (or none, if value matching silently fails). Use `setChoiceByValue` for batch additions. The failure mode is silent — no console error, click handler completes cleanly.
+
+```javascript
+// WRONG — each iteration replaces the prior selection, only the last item survives
+checked.forEach((cb) => {
+    choices.setValue([{ value: cb.value, label: cb.dataset.label }]);
+});
+
+// CORRECT — append per item
+checked.forEach((cb) => {
+    choices.setChoiceByValue(cb.value);
+});
+```
+
+To diagnose: in DevTools console call `choices.setChoiceByValue('some-value')` directly. If the selection grows by one, the loop site is using the wrong API.
+
 ## Batch Task Routing
 
 `AdminController` (the plural list controller) does **NOT** have a `batch()` method. Only `FormController` (the singular edit controller) has it. If batch operations aren't working, check that your form controller exists and is being routed correctly.
