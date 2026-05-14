@@ -35,7 +35,7 @@ Use the `#__` prefix — Joomla replaces it with the actual table prefix at runt
 ALTER TABLE `#__mycomponent_items` ADD COLUMN `description` text NOT NULL DEFAULT '' AFTER `alias`;
 ```
 
-Version-numbered files are executed sequentially during updates. The version in the filename should match a release version of your extension.
+Version-numbered files are executed sequentially during updates. **Filename version must equal or exceed the next release.** Joomla compares the filename's version prefix against the installed version when running update SQL — files where `prefix.version <= installed.version` are silently skipped (no error, no log entry, the migration just never runs). Always name the file with the version users will be **upgrading to**, not the version where the feature was first conceived. If you started a feature for `10.3.0` but it ships in `10.3.3`, the file must be named `10.3.3-*.sql` or it will never run for users on 10.3.0–10.3.2. As a corollary, prefer to introduce new schema in minor or major bumps rather than patches — that gives users a predictable expectation of when migrations may run.
 
 ## DDL vs DML
 
