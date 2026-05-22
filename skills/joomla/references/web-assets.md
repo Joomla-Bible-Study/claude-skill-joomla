@@ -46,6 +46,27 @@ WAM automatically pulls in any declared dependencies, so registering `useScript(
 - `attributes` — object of HTML attributes to add to the emitted tag (e.g., `"defer": true`, `"type": "module"`).
 - `version` — busts CDN/browser caches; the WAM appends it as a query string.
 
+## Integrating a third-party vendor library
+
+A repeatable workflow for adding a vendor JS/CSS library (Fancybox, Choices.js, etc.) into a Joomla extension's WAM-managed assets:
+
+1. **Add the package to `package.json`** as a devDependency at the repository root, so the version is pinned and reproducible.
+2. **Copy the dist files to `media/vendor/<libname>/`** via a build step (npm script, Phing target, etc.). Vendor assets do not live under `media/com_*/` — keeping them in `media/vendor/` allows reuse across extensions.
+3. **Register in `joomla.asset.json` with a full literal path.** Vendor paths cannot use WAM's auto-resolution (see "WAM Non-Standard Paths" in [`gotchas.md`](gotchas.md)) — supply the full `media/vendor/<libname>/<file>` URI.
+4. **Wrap the vendor asset with your own thin asset entries** that declare the vendor as a dependency. Your extension's view code activates the wrapper, not the vendor library directly:
+   ```json
+   { "name": "vendor.fancybox", "type": "script", "uri": "media/vendor/fancybox/fancybox.umd.js" },
+   { "name": "com_mycomponent.fancybox", "type": "script", "uri": "com_mycomponent/fancybox-init.js",
+     "dependencies": ["vendor.fancybox"] }
+   ```
+5. **Use `"attributes": {"defer": true}`** on non-critical JS so it doesn't block render. Most vendor UI libraries (carousels, lightboxes, datepickers) qualify.
+
+```php
+// In the view that needs it:
+$wa->useScript('com_mycomponent.fancybox');
+// WAM also pulls in vendor.fancybox automatically via the dependency.
+```
+
 ## Gotchas
 
 WAM has a few sharp edges around URI resolution, inline assets, and non-standard paths that have bitten many extension developers. The full pitfall list lives in [`gotchas.md`](gotchas.md) under the "WAM" headings — read it before debugging "why isn't my asset loading?"

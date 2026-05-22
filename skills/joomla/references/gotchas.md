@@ -406,6 +406,36 @@ const cleanup = () => {
 
 This affects any Joomla extension that creates confirmation dialogs, AJAX editors, or wizard modals via JavaScript rather than static HTML markup.
 
+## Cross-Browser Popup Windows
+
+When an extension needs to open content in a new window (print views, share previews, generated documents), neither `data:` URIs nor `URL.createObjectURL()` is portable:
+
+- **Chrome blocks `data:` URIs** in `window.open()` as a phishing-mitigation measure
+- **Safari has historically lacked / restricted `createObjectURL()`** for opened-window contexts
+
+The portable pattern is to open an empty window and inject server-rendered HTML from a `<template>` element on the source page via DOM (avoid `document.write` — modern browsers warn on it):
+
+```php
+// In your HtmlView, render the popup content into a template:
+?>
+<template id="popup-content">
+    <?php echo $this->loadTemplate('popup'); ?>
+</template>
+```
+
+```javascript
+// On the trigger (button, link), open empty and inject via DOM:
+document.getElementById('open-popup').addEventListener('click', () => {
+    const popup = window.open('', '_blank', 'width=800,height=600');
+    if (!popup) return; // popup blocker
+
+    const template = document.getElementById('popup-content');
+    popup.document.documentElement.innerHTML = template.innerHTML;
+});
+```
+
+The `<template>` should contain a complete `<html>...<head>...<body>...</body></html>` structure so the popup receives full markup. This works in Chrome, Safari, and Firefox without `data:` URIs, blob URLs, or server-side popup endpoints.
+
 ## getStoreId() in ListModel
 
 `ListModel::getStoreId()` generates a hash key to distinguish cached data sets. If you add custom filters or state to your list model, you **must** override this method or the model will return stale cached results when filters change:
