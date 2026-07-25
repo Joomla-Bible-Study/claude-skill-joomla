@@ -453,3 +453,48 @@ protected function getStoreId($id = ''): string
 ```
 
 Every `filter.*` state your `getListQuery()` uses must appear in `getStoreId()`. Miss one and you get the previous filter's results from cache.
+
+## API Returns 401 With a Valid Token — Two Gates, Both Super-Users-Only
+
+API access is gated **twice**, in two different screens, and both default to
+Super Users. Both must pass:
+
+| gate | where |
+|---|---|
+| Allowed User Groups | *Plugins → User - Joomla API Token* |
+| `core.login.api` | *Global Configuration → Permissions* |
+
+Adding the group in the plugin is necessary but **not** sufficient — the ACL
+grant is separate, and nothing in the UI indicates it is what refused the
+request. An *empty* Allowed User Groups means **allow all groups**, not none.
+
+Because only Super Users can authenticate out of the box, the per-verb checks
+(`core.create` / `core.edit` / `core.delete`) are never exercised on a stock
+install — everyone who can log in can already do everything. Scoping an
+integration means granting `core.login.api` to a non-super group *and* limiting
+that group's component permissions. See `references/component-advanced.md`.
+
+## Log::add() to an Unregistered Category Is Silently Discarded
+
+`Log::addLogEntry()` dispatches an entry only to loggers whose configuration
+matches its category. With no logger registered for that category, the entry is
+built and then **dropped** — logging that looks like it works and writes nothing.
+
+```php
+// Writes nowhere unless something registered 'com_example'
+Log::add('Something happened', Log::WARNING, 'com_example');
+
+// Register once, early — component boot() covers every application
+Log::addLogger(['text_file' => 'com_example.errors.php'], Log::ALL, ['com_example']);
+```
+
+Two traps follow:
+
+- **Register in exactly one place.** Registering a category twice gives it two
+  loggers and writes every entry twice.
+- **Don't register at `Log::ALL` in production.** DEBUG/INFO fire on every
+  request; one routine line per request is unbounded growth. Register a mask of
+  WARNING-and-above by default and widen it only when debug mode is on.
+
+Registering in a bootstrap that needs `$app->getDocument()` will not cover the
+API application, which has no document.
