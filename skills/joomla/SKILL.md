@@ -1,6 +1,6 @@
 ---
 name: joomla
-description: Joomla 5+ / 6 / 7 extension development for components, modules, plugins, libraries, and templates using modern MVC with PSR-4, DI, and service providers. Trigger on Joomla 5, 5.4, 6, 6.1, 6.2, 7, J5/J6/J7, Joomla CMS, provider.php, manifest XML, install script, scriptfile, or any Joomla extension code. Covers scaffolding; MVC views/models/controllers; service providers; manifests; database migrations; language files; form fields; layout and template overrides; plugin event subscribers (SubscriberInterface, CMSPlugin); module dispatchers; Web Asset Manager; task / webservices (Joomla JSON:API) / finder / schemaorg plugins; SEF routers. Use for prompts like "add a view", "register web assets", "override a layout" in any Joomla project.
+description: Joomla 5+ / 6 / 7 extension development for components, modules, plugins, libraries, and templates using modern MVC with PSR-4, DI, and service providers. Trigger on Joomla 5, 5.4, 6, 6.1, 6.2, 7, J5/J6/J7, Joomla CMS, provider.php, manifest XML, install script, scriptfile, cli/joomla.php, or any Joomla extension code. Covers scaffolding; MVC views/models/controllers; service providers; manifests; database migrations; language files; form fields; layout and template overrides; plugin event subscribers (SubscriberInterface, CMSPlugin); module dispatchers; Web Asset Manager; task / webservices / finder / schemaorg plugins; Web Services REST API (Joomla JSON:API, ApiController, JsonapiView, API tokens, consuming the API); console commands (CLI, console plugins, AbstractCommand); SEF routers. Use for prompts like "add a view", "register web assets", "override a layout", "add a CLI command", "expose this via the API" in any Joomla project.
 ---
 
 # Joomla 5+ Extension Development
@@ -53,7 +53,7 @@ Before writing code, identify the right extension type:
 
 - **Component** — Full application with admin backend + frontend views, database tables, CRUD operations, menus. Use when you need a complete management interface (e.g., a booking system, directory, inventory tracker, content manager).
 - **Module** — Small, self-contained display block (sidebar, footer, header widget). Has a dispatcher, optional helper, and template. No admin CRUD — gets data from components or its own parameters.
-- **Plugin** — Event-driven code that hooks into Joomla's lifecycle. Types include: content, system, finder (search), task (scheduled), webservices (API), schemaorg, and more.
+- **Plugin** — Event-driven code that hooks into Joomla's lifecycle. Types include: content, system, finder (search), task (scheduled), webservices (API), schemaorg, console (CLI commands), and more.
 - **Library** — Shared PHP code used by multiple extensions. Installed to `libraries/` and autoloaded via PSR-4 namespace. Use when you have utility classes, API wrappers, or shared logic consumed by your components, plugins, and modules.
 - **Template** — Controls the site's HTML shell and layout overrides.
 
@@ -68,6 +68,7 @@ Cross-cutting references (loaded on demand):
 - `references/coding-standards.md` — PSR-12 / PHPDoc / ESLint / PHPCS conventions
 - `references/component-advanced.md` — Toolbar API, batch, ordering, tags, versioning, workflow, webservices, mail templates, dashboards, custom rules
 - `references/component-lifecycle.md` — Model save flow, `prepareTable()`, `Table::bind()`/`store()`, filter forms, install script, config.xml, site-side differences, HTMLHelper services, `showon` and fieldset tabs
+- `references/console-commands.md` — CLI commands for `php cli/joomla.php`: console plugin, `AbstractCommand`, lazy container-loader registration, what differs under the console
 - `references/database.md` — Install SQL / update SQL, `#__` prefix, DDL-vs-DML rule
 - `references/editor-api.md` — WYSIWYG editor JS/PHP API + XTD buttons
 - `references/form-fields.md` — Built-in field types + custom field authoring
@@ -77,6 +78,7 @@ Cross-cutting references (loaded on demand):
 - `references/testing.md` — PHPUnit + Jest patterns with real Joomla CMS classes
 - `references/update-server.md` — Update server XML, `<targetplatform>` regex, SHA hashes, per-type tweaks
 - `references/web-assets.md` — `joomla.asset.json` schema, `useStyle`/`useScript`, dependencies
+- `references/webservices-api.md` — Joomla JSON:API REST layer: webservices plugin routes, `ApiController` / `JsonapiView`, API tokens, errors, CORS, consuming the API from PHP / JS / curl
 - `references/gotchas.md` — Hard-won J5/J6 pitfalls (controllers, routing, WAM, dark mode, etc.)
 
 Shared cross-extension references (linked from the per-type files above):
@@ -379,6 +381,14 @@ Menu item types define what appears in Joomla's Menu Manager. Joomla scans `comp
 
 Libraries are shared PHP packages installed under `libraries/` that any extension can consume; Composer is the package manager for any third-party PHP libs you bundle into your extension. The full reference — when to use a library vs. a helper, the `composer.json` template, the `vendor-dir: libraries/vendor` convention, runtime autoload-loading from `provider.php`, the common Joomla-ecosystem libraries to use vs. avoid duplicating, and npm front-end build tooling — lives in [`references/library.md`](references/library.md).
 
+## Web Services API (JSON:API)
+
+Joomla's REST layer at `/api/index.php/v1/...` speaks JSON:API and is extended in three pieces: a **webservices plugin** registering routes in `onBeforeApiRoute` (`createCRUDRoutes()` for the five CRUD routes, `Route` objects for anything custom, a per-route `public` flag that defaults to private), an **`ApiController`** in the component's `api/` tier that whitelists `filter[...]` / `list[...]` query vars into model state and reuses the **administrator** models through `ApiMVCFactory`, and a **`JsonapiView`** whose `fieldsToRenderItem` / `fieldsToRenderList` arrays are the output whitelist. Requests authenticate per call through the `api-authentication` plugin group — a Joomla API Token in `X-Joomla-Token` or `Authorization: Bearer`, HMAC-bound to the site secret — never the session cookie, so admin JS talks to a `JsonView` on the admin tier instead. Language strings load from `api/`, not `administrator/`. The reference also covers error statuses (401 vs 404 as the wiring diagnostic), CORS settings, and consuming the API with `HttpFactory`, `fetch()`, and curl. Read [`references/webservices-api.md`](references/webservices-api.md).
+
+## Console Commands (CLI)
+
+Extensions add commands to `php cli/joomla.php` through a plugin in the **`console`** group that subscribes to `ApplicationEvents::BEFORE_EXECUTE` and calls `$app->addCommand()` — or, like core, shares the command in the container and adds it to the writable command loader so it is only instantiated when invoked. Commands extend `Joomla\Console\Command\AbstractCommand` (`$defaultName`, `configure()`, `doExecute()` returning a Symfony `Command::SUCCESS` / `FAILURE` exit code). The console application has no document, no identity, and no HTTP host — the reference lists every web assumption that breaks under CLI and the guard for each. Standalone `cli/*.php` scripts on `CliApplication` are removed in Joomla 6. For the plugin scaffold, command template, model access via `bootComponent()`, cron / `scheduler:run` guidance, and testing, read [`references/console-commands.md`](references/console-commands.md).
+
 ## Extension Packaging (Building the Installable ZIP)
 
 Joomla extensions ship as ZIP files installed through the admin installer (`System → Install → Extensions`). For manual packaging, the build-script pattern, package manifests (multiple extensions bundled), and the include/exclude checklist for what belongs in the ZIP, read [`references/packaging.md`](references/packaging.md).
@@ -436,7 +446,7 @@ This skill targets Joomla 6 native patterns that also work on Joomla 5. As Jooml
 
 ## Common Gotchas & Pitfalls
 
-Hard-won lessons from real Joomla 5/6 extension development — easy to get wrong because IDE autocompletion, documentation gaps, or reasonable assumptions lead you astray. Topics covered: `BaseController` vs `FormController`, J5 controller API differences (`$this->input` not `getInput()`), event dispatching for J5 compatibility, plugin manifest naming, plugin language file conventions, task plugin language keys, `AdminModel`/`Table` save workflow, `task=` routing, `form.validate` asset, `Table::check()`, HTTP client class, `Registry::get()` defaults, `Text::script()` registration, `Joomla.Text._()` truthy-key trap, batch routing, **the 3-part SEF router contract** (router class + `RouterServiceInterface` + `RouterFactory`), hidden menu items for SEF, router callback naming, **WAM URI auto-resolution / non-standard paths / inline assets**, Bootstrap 5.3 dark mode classes, dynamic modal cleanup, and `getStoreId()` in `ListModel`.
+Hard-won lessons from real Joomla 5/6 extension development — easy to get wrong because IDE autocompletion, documentation gaps, or reasonable assumptions lead you astray. Topics covered: `BaseController` vs `FormController`, J5 controller API differences (`$this->input` not `getInput()`), event dispatching for J5 compatibility, plugin manifest naming, plugin language file conventions, task plugin language keys, **plugins loading under the console application (no `getDocument()`)**, **Web Services API language files loading from `api/` not `administrator/`**, **API 401 with a valid token (two login gates)**, **`Log::add()` to an unregistered category being silently dropped**, `AdminModel`/`Table` save workflow, `task=` routing, `form.validate` asset, `Table::check()`, HTTP client class, `Registry::get()` defaults, `Text::script()` registration, `Joomla.Text._()` truthy-key trap, batch routing, **the 3-part SEF router contract** (router class + `RouterServiceInterface` + `RouterFactory`), hidden menu items for SEF, router callback naming, **WAM URI auto-resolution / non-standard paths / inline assets**, Bootstrap 5.3 dark mode classes, dynamic modal cleanup, and `getStoreId()` in `ListModel`.
 
 For full details and code examples, read [`references/gotchas.md`](references/gotchas.md).
 

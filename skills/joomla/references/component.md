@@ -1405,124 +1405,16 @@ use Joomla\CMS\Language\Text;
 
 ## Webservices API Plugin
 
-Expose component data via Joomla's JSON:API-compliant REST endpoints. Requires a webservices plugin, API controller(s), and API view(s).
+Expose component data over Joomla's JSON:API REST layer at `/api/index.php/v1/example/items`. Three pieces: a **webservices plugin** that registers routes in `onBeforeApiRoute` (`BeforeApiRouteEvent` → `$event->getRouter()->createCRUDRoutes(...)`), an **`ApiController`** in `api/src/Controller/` that maps `filter[...]` / `list[...]` query vars onto model state, and a **`JsonapiView`** in `api/src/View/<Type>/` that whitelists the rendered fields. The API tier reuses the **administrator** models and tables through `ApiMVCFactory` — there is no `api/src/Model/`.
 
-### Plugin
-
-**File:** `plugins/webservices/example/src/Extension/Example.php`
-
-```php
-<?php
-
-namespace Vendor\Plugin\WebServices\Example\Extension;
-
-\defined('_JEXEC') or die;
-
-use Joomla\CMS\Event\Application\BeforeApiRouteEvent;
-use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\Event\SubscriberInterface;
-
-final class Example extends CMSPlugin implements SubscriberInterface
-{
-    public static function getSubscribedEvents(): array
-    {
-        return ['onBeforeApiRoute' => 'onBeforeApiRoute'];
-    }
-
-    public function onBeforeApiRoute(BeforeApiRouteEvent $event): void
-    {
-        $router = $event->getRouter();
-
-        $router->createCRUDRoutes(
-            'v1/example/items',
-            'items',
-            ['component' => 'com_example']
-        );
-    }
-}
+```
+api/
+└── src/
+    ├── Controller/ItemsController.php    # extends ApiController; $contentType = 'items'
+    └── View/Items/JsonapiView.php        # $fieldsToRenderItem / $fieldsToRenderList
 ```
 
-### Plugin Service Provider
-
-**File:** `plugins/webservices/example/services/provider.php`
-
-```php
-<?php
-
-\defined('_JEXEC') or die;
-
-use Joomla\CMS\Extension\PluginInterface;
-use Joomla\CMS\Factory;
-use Joomla\CMS\Plugin\PluginHelper;
-use Joomla\DI\Container;
-use Joomla\DI\ServiceProviderInterface;
-use Vendor\Plugin\WebServices\Example\Extension\Example;
-
-return new class () implements ServiceProviderInterface {
-    public function register(Container $container): void
-    {
-        $container->set(
-            PluginInterface::class,
-            function (Container $container) {
-                $plugin = new Example(
-                    (array) PluginHelper::getPlugin('webservices', 'example')
-                );
-                $plugin->setApplication(Factory::getApplication());
-
-                return $plugin;
-            }
-        );
-    }
-};
-```
-
-### API Controller
-
-**File:** `api/src/Controller/ItemsController.php`
-
-```php
-<?php
-
-namespace Vendor\Component\Example\Api\Controller;
-
-\defined('_JEXEC') or die;
-
-use Joomla\CMS\MVC\Controller\ApiController;
-
-class ItemsController extends ApiController
-{
-    protected $contentType = 'items';
-    protected $default_view = 'items';
-}
-```
-
-### API View (JSON:API)
-
-**File:** `api/src/View/Items/JsonapiView.php`
-
-```php
-<?php
-
-namespace Vendor\Component\Example\Api\View\Items;
-
-\defined('_JEXEC') or die;
-
-use Joomla\CMS\MVC\View\JsonApiView as BaseApiView;
-
-class JsonapiView extends BaseApiView
-{
-    protected $fieldsToRenderItem = [
-        'id', 'title', 'alias', 'description', 'published',
-        'access', 'created', 'created_by', 'modified',
-    ];
-
-    protected $fieldsToRenderList = [
-        'id', 'title', 'alias', 'published', 'created',
-    ];
-}
-```
-
-### Component Manifest Addition
+Wire the tier into the component manifest with an `<api>` block:
 
 ```xml
 <api>
@@ -1532,14 +1424,5 @@ class JsonapiView extends BaseApiView
 </api>
 ```
 
-### API Endpoints (from createCRUDRoutes)
+Routes, authentication (API tokens via the `api-authentication` plugin group — never the session cookie), pagination and filter conventions, error statuses, CORS, language loading from `api/`, consuming the API from PHP / JS / curl, and the full code for all three classes are in [`webservices-api.md`](webservices-api.md).
 
-| Method | URL | Action |
-|--------|-----|--------|
-| GET | `/api/index.php/v1/example/items` | List all items |
-| GET | `/api/index.php/v1/example/items/{id}` | Get single item |
-| POST | `/api/index.php/v1/example/items` | Create new item |
-| PATCH | `/api/index.php/v1/example/items/{id}` | Update item |
-| DELETE | `/api/index.php/v1/example/items/{id}` | Delete item |
-
-Authentication: Joomla API uses token-based auth (API token from user profile) or session-based for logged-in users.

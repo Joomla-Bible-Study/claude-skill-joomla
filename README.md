@@ -16,6 +16,8 @@ Works with [Claude Code](https://claude.com/claude-code) (as a plugin) and with 
 - Plugin event subscribers (`SubscriberInterface`)
 - Module dispatchers
 - Web Asset Manager (WAM) — registering CSS/JS, dependencies, attributes
+- Web Services REST API (JSON:API) — webservices plugin routes, `ApiController` / `JsonapiView`, API tokens, consuming the API
+- Console commands (`php cli/joomla.php`) via console plugins and `AbstractCommand`
 - Backward-compatible patterns (Joomla 5 → 6, no compat plugin required)
 
 Reference files in `skills/joomla/references/` provide deep-dive guidance, loaded on demand to keep the per-load token cost low.
@@ -41,6 +43,7 @@ Reference files in `skills/joomla/references/` provide deep-dive guidance, loade
 - `coding-standards.md` — PSR-12 / PHPDoc / ESLint / PHPCS conventions
 - `component-advanced.md` — toolbar API, batch, ordering, tags, versioning, workflow, webservices, mail templates, dashboards, custom rules
 - `component-lifecycle.md` — model save flow, `prepareTable()`, `Table::bind()`/`store()`, filter forms, install script, config.xml, site-side differences, service interfaces, AJAX, HTMLHelper services, `showon`, fieldset tabs
+- `console-commands.md` — CLI commands for `php cli/joomla.php`: console plugin, `AbstractCommand`, container-loader registration, what breaks under the console
 - `database.md` — install / update SQL, `#__` prefix, DDL-vs-DML rule
 - `editor-api.md` — JoomlaEditor JS API + XTD button surface
 - `form-fields.md` — built-in field types + custom-field authoring
@@ -50,6 +53,7 @@ Reference files in `skills/joomla/references/` provide deep-dive guidance, loade
 - `testing.md` — PHPUnit + Jest patterns with real-CMS bootstrap
 - `update-server.md` — update server XML, `<targetplatform>` regex, SHA hashes, per-type tweaks
 - `web-assets.md` — `joomla.asset.json` schema, `useStyle`/`useScript`, dependencies
+- `webservices-api.md` — Joomla JSON:API REST layer: route registration, `ApiController` / `JsonapiView`, API tokens, errors, CORS, consuming from PHP / JS / curl
 - `gotchas.md` — hard-won J5/J6 pitfalls (controller parents, routing, WAM, modal cleanup, etc.)
 
 ## Requirements
