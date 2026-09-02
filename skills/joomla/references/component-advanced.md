@@ -361,71 +361,7 @@ class ItemModel extends AdminModel implements WorkflowModelInterface
 
 ## Webservices API Plugin
 
-Expose component data via Joomla's REST API by creating a webservices plugin.
-
-**Plugin class** (`plugins/webservices/example/src/Extension/Example.php`):
-```php
-namespace Vendor\Plugin\WebServices\Example\Extension;
-
-use Joomla\CMS\Event\Application\BeforeApiRouteEvent;
-use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\Event\SubscriberInterface;
-
-final class Example extends CMSPlugin implements SubscriberInterface
-{
-    public static function getSubscribedEvents(): array
-    {
-        return ['onBeforeApiRoute' => 'onBeforeApiRoute'];
-    }
-
-    public function onBeforeApiRoute(BeforeApiRouteEvent $event): void
-    {
-        $router = $event->getRouter();
-
-        // Creates GET (list + detail), POST, PATCH, DELETE routes automatically
-        $router->createCRUDRoutes(
-            'v1/example/items',
-            'items',
-            ['component' => 'com_example']
-        );
-    }
-}
-```
-
-**API Controller** (`api/src/Controller/ItemsController.php`):
-```php
-namespace Vendor\Component\Example\Api\Controller;
-
-use Joomla\CMS\MVC\Controller\ApiController;
-
-class ItemsController extends ApiController
-{
-    protected $contentType = 'items';
-    protected $default_view = 'items';
-}
-```
-
-**API View** (`api/src/View/Items/JsonapiView.php`):
-```php
-namespace Vendor\Component\Example\Api\View\Items;
-
-use Joomla\CMS\MVC\View\JsonApiView as BaseApiView;
-
-class JsonapiView extends BaseApiView
-{
-    protected $fieldsToRenderItem = ['id', 'title', 'alias', 'description', 'published', 'created'];
-    protected $fieldsToRenderList = ['id', 'title', 'alias', 'published'];
-}
-```
-
-**Manifest addition** — add the `api/` directory to your component manifest:
-```xml
-<api>
-    <files folder="api">
-        <folder>src</folder>
-    </files>
-</api>
-```
+Covered in full in [`webservices-api.md`](webservices-api.md): webservices plugin route registration (`createCRUDRoutes()` plus custom `Route` objects and the `$publicGets` flag), `ApiController` filter / ordering / save behaviour, `JsonapiView` whitelists and relationships, the `<api>` manifest block, API-token authentication, error statuses, CORS, and consuming the API. The short scaffold is in [`component.md`](component.md) § Webservices API Plugin.
 
 ## Mail Templates
 

@@ -272,12 +272,13 @@ final class Example extends CMSPlugin implements SubscriberInterface
 | **system** | System-wide hooks | `onAfterInitialise`, `onAfterRoute`, `onBeforeRender`, `onAfterRender` |
 | **finder** | Smart Search indexing | `onFinderAfterSave`, `onFinderAfterDelete`, `onFinderCategoryChangeState` |
 | **task** | Scheduled tasks (cron) | `onTaskOptionsList`, `onExecuteTask` |
-| **webservices** | API route registration | `onBeforeApiRoute` |
+| **webservices** | API route registration | `onBeforeApiRoute` — see [`webservices-api.md`](webservices-api.md) |
 | **schemaorg** | Structured data | `onSchemaPrepare` |
 | **user** | User lifecycle | `onUserAfterSave`, `onUserAfterDelete`, `onUserLogin`, `onUserLogout` |
 | **installer** | Extension install events | `onInstallerBeforeInstallation`, `onInstallerAfterInstaller` |
 | **editors** | WYSIWYG editors | `onInit`, `onSave`, `onGetContent` |
 | **editors-xtd** | Editor buttons | `onDisplay` |
+| **console** | CLI commands for `php cli/joomla.php` | `ApplicationEvents::BEFORE_EXECUTE` (`application.before_execute`) — see [`console-commands.md`](console-commands.md) |
 
 ### Other plugin groups (not covered in depth here)
 
@@ -300,7 +301,7 @@ Joomla 6.1 ships 24 plugin groups in total. Beyond the ten above, the rest serve
 | **behaviour** | Mostly home of the **J6 backward-compatibility plugin**; third-party use is rare |
 | **extension** | Generic extension lifecycle hooks (rarely needed when `installer` group covers most cases) |
 
-These are out of scope for the v0.x line because they're either niche or framework-internal. CLI / `joomla console` command authoring (commands ship inside components, not as a plugin group) is also out of scope here — file an issue if you want it added.
+These are out of scope for the 1.x line because they're either niche or framework-internal — file an issue if you want one covered in depth. The **console** group (CLI command authoring) is covered in full in [`console-commands.md`](console-commands.md).
 
 ---
 
@@ -366,8 +367,8 @@ final class MyTask extends CMSPlugin implements SubscriberInterface
 ### Webservices Plugin (API Routes)
 
 ```php
+use Joomla\CMS\Event\Application\BeforeApiRouteEvent;
 use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\CMS\Router\ApiRouter;
 use Joomla\Event\SubscriberInterface;
 
 final class MyApi extends CMSPlugin implements SubscriberInterface
@@ -379,9 +380,13 @@ final class MyApi extends CMSPlugin implements SubscriberInterface
         ];
     }
 
-    public function onBeforeApiRoute(&$router): void
+    public function onBeforeApiRoute(BeforeApiRouteEvent $event): void
     {
-        /** @var ApiRouter $router */
+        // Take the router from the typed event — the by-reference `&$router`
+        // signature is the legacy form.
+        $router = $event->getRouter();
+
+        // GET list/item, POST, PATCH, DELETE. Fourth argument = public GETs (default false).
         $router->createCRUDRoutes(
             'v1/example/items',
             'items',
@@ -390,6 +395,8 @@ final class MyApi extends CMSPlugin implements SubscriberInterface
     }
 }
 ```
+
+The component side (`ApiController`, `JsonapiView`, the `<api>` manifest block), custom non-CRUD routes, token authentication, and consuming the API are in [`webservices-api.md`](webservices-api.md).
 
 ---
 

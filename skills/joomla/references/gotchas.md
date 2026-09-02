@@ -105,6 +105,45 @@ PLG_TASK_MYPLUGIN_TASK_MYTASK_DESC="Description of what this task does."
 
 Using just `PLG_TASK_MYPLUGIN_TASK_MYTASK` (without `_TITLE`) will NOT work — the task type selector will show the raw key.
 
+## Plugins Load Under the Console Application
+
+`Joomla\CMS\Application\ConsoleApplication` (the `php cli/joomla.php` runtime) imports the `behaviour`, `system`, and `console` plugin groups on every invocation, and `scheduler:run` additionally imports every **task** plugin just to list the routines they offer. So a system or task plugin's constructor — and any bootstrap file it `require`s — executes under the console, where there is **no document**: `ConsoleApplication` implements `CMSApplicationInterface` but not `CMSWebApplicationInterface`, and `getDocument()` does not exist.
+
+The failure is a fatal `Call to undefined method ConsoleApplication::getDocument()` that kills the whole CLI process before any command runs — including Joomla's own scheduled tasks, on every site that has the extension installed. Nothing on the web ever trips it, so it ships.
+
+```php
+// api.php / bootstrap required from a plugin constructor
+$app = Factory::getApplication();
+
+// WRONG — fatal under php cli/joomla.php
+$wa = $app->getDocument()->getWebAssetManager();
+
+// RIGHT — CMSWebApplicationInterface is what declares getDocument()
+if ($app instanceof \Joomla\CMS\Application\CMSWebApplicationInterface) {
+    $wa = $app->getDocument()->getWebAssetManager();
+    $wa->getRegistry()->addExtensionRegistryFile('com_myext');
+}
+```
+
+Same guard for `getMenu()`, `getPathway()`, and `getTemplate()` — all web-only. Keep plugin constructors side-effect free and move asset registration into the component's dispatcher or the view. The full list of what differs under the CLI is in [`console-commands.md`](console-commands.md) § What Is Different Under the Console.
+
+## Web Services API Loads Language Files From api/, Not administrator/
+
+Under `ApiApplication`, `JPATH_BASE` is the `api/` directory, and `ComponentDispatcher::loadLanguage()` only looks in `api/language/` and `api/components/com_example/language/`. The admin `.ini` is never loaded. Nothing fails — but every `COM_EXAMPLE_*` string the API touches comes back raw, and the place you notice is a **400 validation error** whose messages are the admin form's language keys (`COM_EXAMPLE_FIELD_TITLE_REQUIRED`) instead of text.
+
+```php
+// api/src/Controller/ItemsController.php
+public function __construct($config = [], ?MVCFactoryInterface $factory = null, ?CMSWebApplicationInterface $app = null, ?Input $input = null)
+{
+    parent::__construct($config, $factory, $app, $input);
+
+    // The admin form's validation messages live in the admin language file.
+    $this->app->getLanguage()->load('com_example', JPATH_ADMINISTRATOR);
+}
+```
+
+Full API reference in [`webservices-api.md`](webservices-api.md).
+
 ## Always Use AdminModel + Table for CRUD
 
 **Never bypass Joomla's Table save workflow** with direct `$db->insertObject()` / `$db->updateObject()` in model `save()` methods. The `AdminModel::save()` → `Table::bind()` → `Table::check()` → `Table::store()` chain handles:
