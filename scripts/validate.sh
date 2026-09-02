@@ -91,6 +91,43 @@ else
   fi
 fi
 
+# ---------- version consistency ----------
+# The plugin version lives in two files and a release has to bump both. Each is
+# validated above in isolation, so a release that bumps one and forgets the other
+# passed validation cleanly — which is exactly what happened preparing v1.1.0.
+# Compared here rather than in either section, since neither owns the pair.
+if [ -f "$PLUGIN" ] && [ -f "$MARKET" ] \
+   && jq -e . "$PLUGIN" >/dev/null 2>&1 && jq -e . "$MARKET" >/dev/null 2>&1; then
+  PLUGIN_NAME=$(jq -r '.name // empty' "$PLUGIN")
+  PV=$(jq -r '.version // empty' "$PLUGIN")
+
+  # Match the marketplace entry by name so this keeps working if more plugins
+  # are added; fall back to the sole entry when there is exactly one.
+  MV=$(jq -r --arg n "$PLUGIN_NAME" '
+    (.plugins[] | select(.name == $n) | .version)
+    // (if (.plugins | length) == 1 then .plugins[0].version else empty end)
+    // empty' "$MARKET")
+
+  if [ -z "$PV" ] || [ -z "$MV" ]; then
+    note "could not compare versions (plugin.json='$PV' marketplace.json='$MV') — check manually"
+  elif [ "$PV" != "$MV" ]; then
+    err "version mismatch: plugin.json='$PV' but marketplace.json='$MV' — a release must bump both"
+  else
+    ok "plugin version consistent ($PV)"
+
+    # A version with no changelog entry is a release nobody can read. Warn rather
+    # than fail: the heading is normally added in the same commit, but a
+    # work-in-progress bump is a legitimate intermediate state.
+    if [ -f CHANGELOG.md ]; then
+      if grep -qE "^## \[$PV\]" CHANGELOG.md; then
+        ok "CHANGELOG.md documents $PV"
+      else
+        note "CHANGELOG.md has no '## [$PV]' heading yet — add one before releasing"
+      fi
+    fi
+  fi
+fi
+
 # ---------- README references the install commands ----------
 if [ -f README.md ]; then
   grep -q 'plugin marketplace add Joomla-Bible-Study/claude-skill-joomla' README.md \

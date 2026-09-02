@@ -297,7 +297,7 @@ Add an `<api>` block to the **component** manifest; the folder name must match `
 </api>
 ```
 
-`ComponentAdapter` copies `<api><files>` but has no `<languages>` handling for the API client, so API-tier language files travel inside `<files>` and land at `api/components/com_example/language/<tag>/com_example.ini` — which is the second path `ComponentDispatcher::loadLanguage()` tries.
+`ComponentAdapter` reads `$manifest->api->files` and copies the folder to `JPATH_API/components/com_example`. **Without the element the classes are never installed**, and since the `Api` namespace resolves to that path, **every route 404s even though the plugin registered it**. Core components are no help as a reference — they ship their `api/` files with the CMS rather than through the installer, so none carry an `<api>` element. The adapter has no `<languages>` handling for the API client, so API-tier language files travel inside `<files>` and land at `api/components/com_example/language/<tag>/com_example.ini` — which is the second path `ComponentDispatcher::loadLanguage()` tries.
 
 **Language strings under the API application load from the API tier, not the admin tier.** `ComponentDispatcher::loadLanguage()` calls `$lang->load($option, JPATH_BASE)` then `JPATH_BASE . '/components/' . $option`, and `JPATH_BASE` is the `api/` directory. So `COM_EXAMPLE_*` keys used by API responses — most visibly the **admin form's validation messages** that `save()` surfaces in 400 errors — come back as raw keys unless you either ship that API-tier `.ini` or load the admin file explicitly:
 
@@ -321,8 +321,56 @@ On a fresh install `plg_api-authentication_token` and `plg_user_token` (which ad
 
 - The token a user copies from **Users → Edit → Joomla API Token** is `base64("<algo>:<userId>:<hmac>")`, where `hmac = hash_hmac(algo, rawSeed, $config->secret)`, the seed is random bytes stored in `#__user_profiles` under `joomlatoken.token`, and `algo` is `sha256` or `sha512`. It is therefore **bound to the site's `$secret`** — regenerating `configuration.php`'s secret invalidates every token, and a token copied between sites never works.
 - The plugin checks `joomlatoken.enabled = 1`, that the user is in the **allowed user groups** configured on `plg_user_token` (default: Super Users only — widen it deliberately), and that the account is not blocked, unactivated, or password-reset-pending. Comparison is timing-safe.
-- On success the request runs **as that user**: `$app->getIdentity()` is the token's owner and every `authorise()` check in `ApiController` uses their ACL. A read-only integration deserves its own user in a group with `core.manage` on your component and nothing else.
-- The token plugin reads `Authorization` first, then `X-Joomla-Token`. Some Apache setups strip `Authorization` from PHP; the plugin handles the `REDIRECT_HTTP_AUTHORIZATION` and `apache_request_headers()` fallbacks, but `X-Joomla-Token` is the header that always survives.
+- The seed is stored **raw** in `#__user_profiles` (not JSON-encoded) alongside `joomlatoken.enabled`.
+- On success the request runs **as that user**: `$app->getIdentity()` is the token's owner and every `authorise()` check in `ApiController` uses their ACL.
+- The token plugin reads `Authorization` first, then `X-Joomla-Token`. Apache / CGI setups (MAMP included) commonly strip `Authorization` before PHP sees it; the plugin has `REDIRECT_HTTP_AUTHORIZATION` and `apache_request_headers()` fallbacks, but `X-Joomla-Token` is the header that always survives.
+
+### Access is gated twice — both default to Super Users
+
+The most common cause of "my token is valid but every call returns 401". Both gates must pass, and they live in different screens:
+
+| Gate | Where | Default |
+|---|---|---|
+| Allowed User Groups | *Plugins → User - Joomla API Token* | Super Users |
+| `core.login.api` | *Global Configuration → Permissions* | Super Users (`{"8":1}` on the root asset) |
+
+The auth plugin reads the first via `getPluginParameter('user', 'token', 'allowedUserGroups', [8])`; an **empty** value means *allow all groups*, not *allow none*. The second is checked by `login()` through the `core.login.api` action, and nothing in the UI hints that it is the thing refusing the request. A least-privilege integration needs three steps:
+
+1. Add the group in the User - Joomla API Token plugin.
+2. Grant `core.login.api` to that group in Global Configuration.
+3. Scope that group's component permissions — otherwise the key is effectively a Super User.
+
+Consequence when testing: on a stock install everyone who *can* authenticate is a Super User, so the per-operation checks below always pass and never get exercised until you do step 3.
+
+### Permission required per operation
+
+| Operation | Requires |
+|---|---|
+| authenticate at all | `core.login.api` **and** an allowed user group |
+| `GET` | nothing extra when the route is `public`; otherwise a token |
+| `POST` | `core.manage` + `core.create` (or `core.create` on a category) |
+| `PATCH` | `core.manage` + `core.edit` |
+| `DELETE` | `core.manage` + `core.delete` |
+
+`ApiController` throws `NotAllowed` (403) for the write checks — catchable if you want to record refused attempts.
+
+### Read-side ACL is your job
+
+`ApiController` enforces **nothing** on reads. The list model is all that stands between a caller and restricted rows, so every model backing an API route needs the view-level filter:
+
+```php
+$user = $this->getCurrentUser();
+
+if (!$user->authorise('core.admin')) {
+    $query->whereIn($db->quoteName('a.access'), $user->getAuthorisedViewLevels());
+}
+```
+
+Miss it on one model and that resource publishes rows the caller could not see on the site itself. Audit **every** model you expose, including ones written for admin-only use, which have never needed it. Equally, `fieldsToRenderItem` / `fieldsToRenderList` are the only control withholding columns the query already selected — if a table keeps credentials or personal data in a `params` blob or an email column, leaving it out of those arrays is the control.
+
+### Failed API auth is not logged by core
+
+`ApiApplication` authenticates with `login(['username' => ''])` — token auth has no username. `plg_actionlog_joomla::onUserLoginFailure` looks the user up *by username* and returns when it finds none, so a bad token produces a 401 and **no action-log entry**. If you need a record of refused API calls you must add it yourself (the web-server access log is otherwise the only trace).
 
 Writing your own provider (an app-specific key, an OAuth bearer, an HMAC signature) is a plugin in the `api-authentication` group subscribing to `onUserAuthenticate` with an `AuthenticationEvent`, setting `$response->status = Authentication::STATUS_SUCCESS` plus `username` / `email` / `fullname`, and calling `$event->stopPropagation()`. The core token plugin is the template.
 
@@ -425,14 +473,17 @@ Your own admin or site JS **cannot** call `/api` with the session cookie — the
 ## Gotchas
 
 - **401 versus 404 is the diagnostic.** A route that returns 404 for an unauthenticated request was never registered — the webservices plugin is disabled, not installed, or throwing before `addRoutes()`. A correctly registered non-public route returns **401** without a token. Test this first after every packaging change; it is the single most common way an API ships broken.
-- **The webservices plugin installs disabled.** Enable it from the package's install script `postflight()` on fresh installs ([`install-script.md`](install-script.md)) or every site comes up with a 404 API.
+- **The webservices plugin installs disabled.** Enable it from the package's install script `postflight()` on fresh installs ([`install-script.md`](install-script.md)) or every site comes up with a 404 API. The other 404-with-plugin-enabled cause is a component manifest without the `<api>` block — the controller classes were never installed.
+- **401 with a valid token means a gate, not the token.** Two gates, both defaulting to Super Users: the token plugin's allowed groups and the `core.login.api` permission. See [Access is gated twice](#access-is-gated-twice--both-default-to-super-users).
+- **Reads are not ACL-checked by the controller.** Access-level filtering lives in your list model; see [Read-side ACL is your job](#read-side-acl-is-your-job).
+- **Bad tokens leave no trace in the action log.** See [Failed API auth is not logged by core](#failed-api-auth-is-not-logged-by-core).
 - **`public` is per route and defaults to false.** Forgetting the fourth argument to `createCRUDRoutes()` makes reads private; that is the safe direction. The dangerous mistake is passing `['public' => true]` in `$defaults`, which makes **writes** public too — `$defaults` is shared by all five routes. Only the `$publicGets` argument scopes it to GET.
 - **Filters are opt-in.** The base `displayList()` handles `page` only. A `filter[foo]` you did not translate into `$modelState` is silently ignored and the client gets the unfiltered set. Whitelist exactly the keys your `ListModel::populateState()` / `getListQuery()` read, and clean each value.
 - **Language files come from `api/`.** Validation messages in 400 responses arrive as `COM_EXAMPLE_FIELD_TITLE_REQUIRED` unless you load the admin language file (see [Manifest and Language Files](#manifest-and-language-files)).
 - **`Accept` matters.** A client sending `Accept: application/json` (only) gets 406, because the API's only negotiated type is `application/vnd.api+json`. `Accept: */*` or the exact type both work. `Content-Type` on writes is `application/json`.
 - **The PATCH body is a merge.** `save()` loads the stored row and fills every column you did not send, so a PATCH with one field is safe. A POST must carry everything the admin form requires.
 - **`getModel()` names come from `$contentType`.** `items` → `Item` / `Items`. If your models are `ExampleItemModel`, override `getModel()` to map, or the controller throws `JLIB_APPLICATION_ERROR_MODEL_CREATE`.
-- **The API is a `CMSWebApplicationInterface`**, so `getDocument()` exists (it is a `JsonapiDocument`) — but there is no template, no `getMenu()` items to speak of, and `Uri::root()` is the API URL. Code in a shared bootstrap that assumes the HTML document or admin toolbar still needs an `isClient('api')` branch.
+- **The API is a `CMSWebApplicationInterface`**, so `getDocument()` exists — but it is a `JsonapiDocument`, not `HtmlDocument`. Anything a shared bootstrap sets up only when it sees the HTML document or the admin client (logger registration is the classic) is silently absent from API requests. Register such things from the component's `boot()`, which runs for every application, and branch on `isClient('api')` where behaviour genuinely differs.
 - **Debug off hides 500 detail.** Any uncaught exception that is not one of the typed ones renders as a bare `Internal server error`. Switch on debug locally before chasing one.
 
 ## Testing
