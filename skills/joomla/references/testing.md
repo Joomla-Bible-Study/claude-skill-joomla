@@ -2,6 +2,20 @@
 
 PHPUnit (PHP) and Jest (JavaScript) patterns for Joomla 5+ extension testing. The core insight from Joomla's own test infrastructure: **load real CMS classes, don't stub them.** This validates your code against actual Joomla signatures and catches J5→J6 breaking changes automatically.
 
+## Test Layers
+
+Three layers, each answering a question the others cannot. **This reference covers the first two.**
+
+| Layer | Mechanism | Answers |
+|---|---|---|
+| **Unit** | In-process, stubs and doubles | Does this class's logic work? |
+| **Integration** | In-process, real CMS classes from a Joomla checkout | Does it work against Joomla's actual signatures? |
+| **E2E** | PHPUnit on the host, over HTTP, against a disposable Docker stack | Does the running site behave correctly for a real request? |
+
+The in-process layers are fast — they catch signature drift across Joomla versions in seconds, which no container run will match. Keep them.
+
+What they cannot observe is anything that only exists in a real request: rendered template HTML, response headers and status codes, redirects, session and cookie behaviour, ACL as the actual dispatcher enforces it, `.htaccess` rules, and whether a refused request actually failed to change state. That is the third layer's job, and it is a separate skill in this suite — **`e2e-tests`**.
+
 ## Directory Structure
 
 ```
@@ -227,10 +241,10 @@ beforeEach(() => {
 - Custom form field logic
 - JavaScript UI helpers and data transformations
 
-**Don't test:**
+**Don't test here:**
 - Joomla framework internals (MVC routing, form binding, ACL checks)
 - Simple getters/setters with no logic
-- Template HTML output (use E2E tests for that)
+- Template HTML output, response headers/status, redirects, session behaviour, and whether a refusal actually prevented the state change — these need a real request, so they belong to the **`e2e-tests`** skill's Docker-over-HTTP layer, not to an in-process test
 
 ## Testing Gotchas
 

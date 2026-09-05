@@ -3,18 +3,38 @@
 # other than Claude Code (Cursor, GitHub Copilot, Windsurf, Cline, Aider, and any
 # tool that reads the emerging AGENTS.md standard).
 #
-# Source of truth: skills/joomla/SKILL.md  +  skills/joomla/references/*.md
+# Source of truth: skills/$UNIVERSAL_SKILL/SKILL.md + its references/*.md
 # Output:         dist/universal/
 #
 # Run locally:    bash scripts/build-universal.sh
 # CI uses it from .github/workflows/release.yml to produce a second release ZIP.
+#
+# ---------------------------------------------------------------------------
+# Only ONE skill ships in the universal package, and that is deliberate.
+#
+# This build flattens a skill into always-loaded rule files (AGENTS.md, Cursor
+# rules, Copilot instructions…). That format suits reference material the tool
+# should have in context whenever it touches Joomla code — which is what the
+# `joomla` skill is.
+#
+# It is the wrong format for the audit-* skills. Those are procedural workflows
+# that discover findings, stop, and wait for the user before touching code. As
+# an always-on rule file, that instruction either fires when nobody asked for an
+# audit or is ignored entirely. They ship to Claude Code and as individual skill
+# zips instead; see the channel matrix in README.md.
+#
+# So if you add a skill, do NOT add it here unless it is reference material of
+# the same shape as `joomla`.
+# ---------------------------------------------------------------------------
 
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-SRC_SKILL="skills/joomla/SKILL.md"
-SRC_REFS="skills/joomla/references"
+UNIVERSAL_SKILL="joomla"
+
+SRC_SKILL="skills/${UNIVERSAL_SKILL}/SKILL.md"
+SRC_REFS="skills/${UNIVERSAL_SKILL}/references"
 OUT="dist/universal"
 
 if [ ! -f "$SRC_SKILL" ]; then
@@ -133,14 +153,14 @@ emit_target "$OUT/CONVENTIONS.md"                  ""        "$HEADER_AIDER"
 cat > "$OUT/README.md" <<'EOF'
 # Joomla Skill — Universal AI Coding Package
 
-Generated from [`Joomla-Bible-Study/claude-skill-joomla`](https://github.com/Joomla-Bible-Study/claude-skill-joomla).
+Generated from [`Joomla-Bible-Study/joomla-skills`](https://github.com/Joomla-Bible-Study/joomla-skills).
 The canonical source is the Claude Code skill; this package mirrors the same
 content for other AI coding tools.
 
 ## What's in this package
 
 ```
-AGENTS.md                          Universal agent guidance (Codex, Cursor 1.0+, Zed, Aider, …)
+AGENTS.md                          Universal agent guidance (Cursor 1.0+, Zed, Aider, …)
 .github/copilot-instructions.md    GitHub Copilot custom instructions
 .cursor/rules/joomla.mdc           Cursor project rule (auto-attaches on PHP / manifest XML)
 .windsurfrules                     Windsurf project rules
@@ -157,7 +177,7 @@ file are pre-wired to find `references/` from its own location.
 
 | Tool                    | Copy these                                          |
 |-------------------------|-----------------------------------------------------|
-| OpenAI Codex / generic  | `AGENTS.md` + `references/`                         |
+| Generic / AGENTS.md     | `AGENTS.md` + `references/`                         |
 | Cursor                  | `.cursor/rules/joomla.mdc` + `references/`          |
 | GitHub Copilot          | `.github/copilot-instructions.md` + `references/`   |
 | Windsurf                | `.windsurfrules` + `references/`                    |
@@ -166,14 +186,22 @@ file are pre-wired to find `references/` from its own location.
 
 Multiple tools can coexist — each reads its own file and ignores the others.
 
+## On Codex and Qwen Code
+
+Both have a plugin system that reads the upstream repo's skills directly, so they
+get all 17 skills rather than just the extension-development guidance in this
+package. Use the repo's manifests instead of these rule files — see Option 4 in
+the upstream README.
+
 ## Using Claude Code instead?
 
-This universal package is for non-Claude tools. If you're on Claude Code, install
-the proper plugin instead — you'll get progressive disclosure, automatic skill
-activation on Joomla keywords, and faster context use:
+This universal package is for tools without a plugin system. If you're on Claude
+Code, install the proper plugin instead — you'll get progressive disclosure,
+automatic skill activation on Joomla keywords, the twelve security audits, and
+faster context use:
 
 ```
-/plugin marketplace add Joomla-Bible-Study/claude-skill-joomla
+/plugin marketplace add Joomla-Bible-Study/joomla-skills
 /plugin install joomla@joomla-bible-study
 /reload-plugins
 ```
@@ -181,7 +209,7 @@ activation on Joomla keywords, and faster context use:
 ## License & contributing
 
 GPL-2.0-or-later. Issues, corrections, and PRs welcome at the upstream repo:
-https://github.com/Joomla-Bible-Study/claude-skill-joomla
+https://github.com/Joomla-Bible-Study/joomla-skills
 EOF
 
 # 7. Cleanup

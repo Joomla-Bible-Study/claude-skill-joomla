@@ -13,6 +13,11 @@ on:
 permissions:
   contents: write
 
+env:
+  # The one skill that also ships as the universal (non-Claude tool) package.
+  # Keep in sync with scripts/build-universal.sh, which explains why it is one.
+  UNIVERSAL_SKILL: joomla
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -22,27 +27,62 @@ jobs:
 
       - name: Resolve tag
         id: tag
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_TAG: ${{ inputs.tag }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "name=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            tag="$INPUT_TAG"
           else
-            echo "name=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            tag="$GITHUB_REF_NAME"
           fi
+          # Constrain the tag before it reaches filenames and release notes.
+          if ! printf '%s' "$tag" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.]+)?$'; then
+            echo "::error::refusing to release from tag '$tag' — expected vMAJOR.MINOR.PATCH"
+            exit 1
+          fi
+          echo "name=${tag}" >> "$GITHUB_OUTPUT"
 
+      # The inlined two-line check this replaces had drifted from the real
+      # script, so a release could ship what a PR would have rejected.
       - name: Validate skill structure
-        run: |
-          test -f skills/joomla/SKILL.md || { echo "::error::skills/joomla/SKILL.md missing"; exit 1; }
-          head -1 skills/joomla/SKILL.md | grep -q '^---$' || { echo "::error::SKILL.md missing YAML frontmatter"; exit 1; }
+        run: bash scripts/validate.sh
 
-      - name: Build skill zip
-        id: zip
+      - name: Build one zip per skill
+        id: zips
         env:
           TAG: ${{ steps.tag.outputs.name }}
         run: |
-          out="joomla-skill-${TAG}.zip"
-          (cd skills && zip -r "../${out}" joomla -x "*.DS_Store" "*/.DS_Store")
-          ls -lh "${out}"
-          echo "file=${out}" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+
+          # Claude.ai / Claude Desktop expect an uploaded skill zip whose ROOT is
+          # the skill folder itself — one skill per zip. That is why this is a
+          # loop producing N assets rather than one archive of skills/.
+          files=""
+          for dir in skills/*/; do
+            slug="$(basename "$dir")"
+            out="${slug}-skill-${TAG}.zip"
+            # The joomla asset keeps its historical name so links in older
+            # releases, the README, and the docs keep resolving.
+            if [ "$slug" = "$UNIVERSAL_SKILL" ]; then
+              out="joomla-skill-${TAG}.zip"
+            fi
+            (cd skills && zip -qr "../${out}" "$slug" -x "*.DS_Store" "*/.DS_Store")
+            # Confirm every entry is under the skill folder — the upload expects
+            # the skill folder to be the archive root.
+            if unzip -Z1 "$out" | grep -qv "^${slug}/"; then
+              echo "::error::${out} has entries outside ${slug}/"
+              exit 1
+            fi
+            ls -lh "$out"
+            files="${files}${out}"$'\n'
+          done
+
+          {
+            echo "files<<EOF"
+            printf '%s' "$files"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build universal package zip
         id: universal
@@ -57,27 +97,91 @@ jobs:
           ls -lh "${out}"
           echo "file=${out}" >> "$GITHUB_OUTPUT"
 
+      # Composed as a file rather than inline YAML so the asset table can be
+      # generated from each skill's own frontmatter description — one source of
+      # truth, and a new skill shows up in the notes without editing this file.
+      - name: Compose release notes
+        env:
+          TAG: ${{ steps.tag.outputs.name }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          {
+            echo "**Install in Claude Code (all skills in this suite):**"
+            echo '```'
+            echo "/plugin marketplace add ${REPO}"
+            echo "/plugin install joomla@joomla-bible-study"
+            echo "/reload-plugins"
+            echo '```'
+            echo
+            echo "**Install in Claude.ai / Claude Desktop (one zip per skill):**"
+            echo
+            echo "The consumer apps take one skill per upload. Download only the skills you want, then upload each at **Claude.ai → Customize → Skills → + → Create skill**. Code execution must be enabled first (Settings → Capabilities) or the Skills menu does not appear."
+            echo
+            echo "| Skill | Asset | What it does |"
+            echo "|---|---|---|"
+          } > release-body.md
+
+          emit_row() {
+            dir="$1"
+            slug="$(basename "$dir")"
+            asset="${slug}-skill-${TAG}.zip"
+            if [ "$slug" = "$UNIVERSAL_SKILL" ]; then
+              asset="joomla-skill-${TAG}.zip"
+            fi
+            # Lead clause only — the full description lives in the skill, and at
+            # 15+ rows the untrimmed text turns the release page into a wall.
+            # Cut at whichever comes first: the end of the first sentence (a
+            # period FOLLOWED BY A SPACE, so `provider.php` and `composer.json`
+            # survive) or an em-dash clause. Check the preview printed below
+            # after editing any description.
+            desc="$(awk '
+              NR==1 && /^---$/ { fm=1; next }
+              fm && /^---$/     { exit }
+              fm && /^description:/ {
+                sub(/^description:[[:space:]]*/, "")
+                cut = length($0) + 1
+                if (match($0, /\.[[:space:]]/) && RSTART < cut) cut = RSTART
+                if (match($0, / — /)          && RSTART < cut) cut = RSTART - 1
+                $0 = substr($0, 1, cut)
+                sub(/[[:space:]]+$/, "")
+                if ($0 !~ /\.$/) $0 = $0 "."
+                gsub(/\|/, "\\|")
+                print; exit
+              }
+            ' "${dir}SKILL.md")"
+            echo "| \`${slug}\` | \`${asset}\` | ${desc} |" >> release-body.md
+          }
+
+          # Universal skill first, then the rest alphabetically.
+          emit_row "skills/${UNIVERSAL_SKILL}/"
+          for dir in skills/*/; do
+            if [ "$(basename "$dir")" = "$UNIVERSAL_SKILL" ]; then
+              continue
+            fi
+            emit_row "$dir"
+          done
+
+          {
+            echo
+            echo "**Other AI coding tools (Cursor, GitHub Copilot, Windsurf, Cline, Aider, Codex / AGENTS.md):**"
+            echo
+            echo "Download \`joomla-skill-universal-${TAG}.zip\` and follow the install table in its bundled \`README.md\`. One file per tool, all sharing the same \`references/\` directory. This package carries the \`${UNIVERSAL_SKILL}\` skill only — the audit workflows are interactive and do not translate to always-on rule files."
+            echo
+            echo "See the [README](https://github.com/${REPO}#readme) for full instructions."
+          } >> release-body.md
+
+          echo "--- release-body.md ---"
+          cat release-body.md
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.tag.outputs.name }}
           name: ${{ steps.tag.outputs.name }}
           generate_release_notes: true
+          body_path: release-body.md
           files: |
-            ${{ steps.zip.outputs.file }}
+            ${{ steps.zips.outputs.files }}
             ${{ steps.universal.outputs.file }}
-          body: |
-            **Install in Claude Code:**
-            ```
-            /plugin marketplace add Joomla-Bible-Study/claude-skill-joomla
-            /plugin install joomla@joomla-bible-study
-            /reload-plugins
-            ```
-
-            **Install in Claude.ai (consumer app):**
-            Download `${{ steps.zip.outputs.file }}` below, then upload at https://claude.ai/settings/capabilities → Skills → Create skill.
-
-            **Other AI coding tools (Cursor, GitHub Copilot, Windsurf, Cline, Aider, Codex / AGENTS.md):**
-            Download `${{ steps.universal.outputs.file }}` and follow the install table in its bundled `README.md`. One file per tool, all sharing the same `references/` directory.
-
-            See [README](https://github.com/Joomla-Bible-Study/claude-skill-joomla#readme) for full instructions.
