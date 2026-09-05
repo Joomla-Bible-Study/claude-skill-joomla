@@ -112,7 +112,7 @@ Not every skill reaches every channel. This matrix is the short version; the opt
 | Channel | `joomla` | The 16 workflows | How |
 |---|:--:|:--:|---|
 | Claude Code plugin | ✅ | ✅ | One install, whole suite (Option 1) |
-| Claude.ai / Claude Desktop | ✅ | ✅ | One zip upload **per skill** (Option 2) |
+| Claude.ai / Claude Desktop | ✅ | ⚠️ | One zip upload **per skill**; workflows can't walk a repo here (Option 2) |
 | Manual `~/.claude/skills/` | ✅ | ✅ | Copy or symlink each folder (Option 3) |
 | Codex / Qwen Code | ✅ | ✅ | Plugin manifests in this repo (Option 4) |
 | Cursor / Copilot / Windsurf / Cline / Aider | ✅ | ❌ | Universal package (Option 5) |
@@ -135,21 +135,28 @@ This is the best channel for the audit skills specifically — they need file ac
 
 ### Option 2 — Claude.ai consumer app (web, Mac, Windows desktop)
 
-The Claude.ai chat app does not load Claude Code plugins, but it does support uploading skills as a zip file. **One skill per zip** — so each release ships a separate asset per skill, and you upload only the ones you want.
+**Most people want exactly one download here: `joomla-skill-vX.Y.Z.zip`.**
+
+The workflow skills read a whole repository — they walk controllers, models, and manifests looking for what's wrong. Claude.ai can only see what you paste into a conversation or put in a Project, so an audit there is working blind on 5% of the codebase. **If you want the audits, use Claude Code** (Option 1, one install for all 17). Adding them here is only worth it if you routinely paste single files in for review.
+
+Claude.ai does not load Claude Code plugins, and it takes **one skill per zip** — that is a platform rule, not a packaging choice, so multiple skills cannot be bundled into one upload. That is the other reason to prefer Option 1 if you want more than one or two.
 
 1. In Claude.ai, open **Settings → Capabilities** and make sure **code execution** is enabled. The Skills menu does not appear until it is — its absence, not your plan, is the usual reason people can't find Skills.
 2. Go to **Customize → Skills**, click the **+** button, then **Create skill**.
-3. Open the [latest release](https://github.com/Joomla-Bible-Study/joomla-skills/releases/latest) and download the asset(s) you want:
-   - `joomla-skill-vX.Y.Z.zip` — the extension-building skill
-   - `audit-authz-skill-vX.Y.Z.zip`, `audit-xss-skill-vX.Y.Z.zip`, … — one per security audit (twelve)
-   - `joomla-deprecations-skill-vX.Y.Z.zip`, `php-conservative-skill-vX.Y.Z.zip`, `php-upcoming-skill-vX.Y.Z.zip`, `e2e-tests-skill-vX.Y.Z.zip` — the four maintenance workflows
+3. From the [latest release](https://github.com/Joomla-Bible-Study/joomla-skills/releases/latest), download **`joomla-skill-vX.Y.Z.zip`**.
 4. Drop in the zip. Claude reads the `name` and `description` from `SKILL.md`'s frontmatter.
-5. Repeat for each additional skill.
-6. Toggle each skill on for any Project (or globally) where you want it active.
+5. Toggle it on for any Project (or globally) where you want it active.
 
-To get the most out of the `joomla` skill here, keep the **Code execution / Analysis** tool on so Claude can generate scaffolded files as downloadable artifacts. Pair it with a Project that holds your component source for richer context.
+Keep the **Code execution / Analysis** tool on so Claude can generate scaffolded files as downloadable artifacts, and pair it with a Project holding your component source for richer context.
 
-The `audit-*` skills work in Claude.ai but are less effective than in Claude Code — they can only reason about files you have put in the conversation or the Project, not walk a repository.
+<details>
+<summary>Adding a workflow skill anyway</summary>
+
+Every skill ships its own asset — `audit-authz-skill-vX.Y.Z.zip`, `audit-xss-skill-vX.Y.Z.zip`, and so on for all twelve audits, plus `joomla-deprecations-`, `php-conservative-`, `php-upcoming-`, and `e2e-tests-`. Download the ones you want and repeat steps 2–5 for each.
+
+Pick the one or two that match how you actually work — `audit-xss` or `audit-sql-filtering` if you paste view and model code in for review, say. Installing all sixteen means sixteen uploads for skills that mostly cannot reach your files.
+
+</details>
 
 ### Option 3 — Manual copy into `~/.claude/skills/` (Claude Code, no plugin)
 
