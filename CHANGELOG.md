@@ -8,6 +8,9 @@ All notable changes to the Joomla skill are documented here. The format follows 
 
 ## [Unreleased]
 
+### Fixed
+- `README.md` — documents the v1.x upgrade path. Because the repository was renamed at 2.0.0, an existing install's marketplace is registered under the old name and `/plugin update` does **not** reach 2.0.0: the marketplace clone refreshes to the new commit, but the installed copy stays pinned in `~/.claude/plugins/cache/<marketplace>/<plugin>/1.1.0/` and keeps exposing only the single `joomla` skill. Removing and re-adding the marketplace fixes it. Found by hitting it on a real upgrade, not predicted.
+
 ## [2.0.0] — 2026-09-04
 
 The repository stops being a single-skill repo. `skills/` is now a suite: the existing `joomla` reference skill plus **sixteen procedural workflows** — twelve non-overlapping security audits and four maintenance passes — with the build tooling generalised to discover skills rather than carry a hardcoded path.

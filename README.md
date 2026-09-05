@@ -119,6 +119,26 @@ Not every skill reaches every channel. This matrix is the short version; the opt
 
 The workflow skills are deliberately absent from the universal package. That format flattens a skill into an always-loaded rule file, and a procedural audit that reports findings then waits for you is exactly wrong as an always-on rule — it would either fire when nobody asked or be ignored. This is a channel limitation, not a defect.
 
+### Already on v1.x? Re-add the marketplace
+
+The repository was renamed at v2.0.0 (`claude-skill-joomla` → `joomla-skills`). If you installed
+before then, your marketplace is registered under the old name and **`/plugin update` will not bring
+you to v2.0.0** — the marketplace clone refreshes, but the installed copy stays pinned at 1.1.0 and
+you keep seeing only the single `joomla` skill.
+
+Remove and re-add it:
+
+```
+/plugin marketplace remove joomla-bible-study
+/plugin marketplace add Joomla-Bible-Study/joomla-skills
+/plugin install joomla@joomla-bible-study
+/reload-plugins
+```
+
+`/reload-plugins` should report **16 more skills** than before, and `joomla:audit-authz`,
+`joomla:audit-xss`, `joomla:e2e-tests` and the rest become available. A fresh install is unaffected —
+use Option 1 below.
+
 ### Option 1 — Claude Code plugin (recommended for Claude Code users)
 
 Inside Claude Code (CLI, desktop app, or IDE extension):
