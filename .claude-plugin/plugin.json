@@ -1,14 +1,14 @@
 {
   "name": "joomla",
-  "version": "1.1.0",
-  "description": "Joomla 5+ / 6 / 7 extension development skill — components, modules, plugins, libraries, templates with modern MVC, PSR-4 namespaces, DI, and service providers.",
+  "version": "2.0.0",
+  "description": "Joomla 5+ / 6 / 7 skill suite — one reference skill for building extensions (components, modules, plugins, libraries, templates with modern MVC, PSR-4 namespaces, DI, and service providers), twelve non-overlapping security audit workflows (authorisation, controller exposure, object-level access, SQL filtering, XSS, sensitive output, file operations, code execution, SSRF/redirects, secrets/crypto, package surface, _JEXEC guards), plus four maintenance workflows (Joomla deprecations, stable-PHP compatibility, upcoming-PHP compatibility, and Docker-over-HTTP end-to-end tests).",
   "author": {
     "name": "Brent Cordis",
     "url": "https://github.com/bcordis"
   },
-  "homepage": "https://github.com/Joomla-Bible-Study/claude-skill-joomla",
-  "repository": "https://github.com/Joomla-Bible-Study/claude-skill-joomla",
-  "bugs": "https://github.com/Joomla-Bible-Study/claude-skill-joomla/issues",
+  "homepage": "https://github.com/Joomla-Bible-Study/joomla-skills",
+  "repository": "https://github.com/Joomla-Bible-Study/joomla-skills",
+  "bugs": "https://github.com/Joomla-Bible-Study/joomla-skills/issues",
   "license": "GPL-2.0-or-later",
-  "keywords": ["joomla", "joomla5", "joomla6", "joomla7", "php", "cms", "mvc", "extension-development", "claude-code", "skill"]
+  "keywords": ["joomla", "joomla5", "joomla6", "joomla7", "php", "cms", "mvc", "extension-development", "security", "audit", "testing", "claude-code", "skill"]
 }

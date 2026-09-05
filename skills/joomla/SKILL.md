@@ -41,7 +41,7 @@ When a Joomla pattern is non-obvious, ambiguous, or might have drifted between v
 
 **When citing in generated code or replies:** prefer a permalink to a specific file/line in `joomla-cms` (right-click → "Copy permalink" produces a commit-pinned URL) over a branch link, so the reference does not silently drift.
 
-**Update cadence:** if a WebFetch reveals the upstream pattern differs from what this skill teaches, flag it to the user and recommend opening an issue on `Joomla-Bible-Study/claude-skill-joomla` so the skill can be corrected.
+**Update cadence:** if a WebFetch reveals the upstream pattern differs from what this skill teaches, flag it to the user and recommend opening an issue on `Joomla-Bible-Study/joomla-skills` so the skill can be corrected.
 
 ## Coding Standards
 

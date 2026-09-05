@@ -1,0 +1,28 @@
+{
+  "name": "joomla",
+  "version": "2.0.0",
+  "description": "Joomla 5+ / 6 / 7 skill suite — extension development reference plus twelve security audits and four maintenance workflows.",
+  "author": {
+    "name": "Brent Cordis",
+    "url": "https://github.com/bcordis"
+  },
+  "homepage": "https://github.com/Joomla-Bible-Study/joomla-skills",
+  "repository": "https://github.com/Joomla-Bible-Study/joomla-skills",
+  "license": "GPL-2.0-or-later",
+  "keywords": ["joomla", "joomla5", "joomla6", "joomla7", "php", "cms", "mvc", "extension-development", "security", "audit", "testing"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Joomla Skills",
+    "shortDescription": "Build, audit, and maintain Joomla 5+ extensions",
+    "longDescription": "One reference skill for building Joomla 5+ / 6 / 7 extensions — components, modules, plugins, libraries, and templates with modern MVC, PSR-4 namespaces, DI, and service providers — alongside twelve non-overlapping security audit workflows and four maintenance workflows covering Joomla deprecations, PHP compatibility, and end-to-end tests.",
+    "developerName": "Joomla Bible Study / Christian Web Ministries",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://github.com/Joomla-Bible-Study/joomla-skills",
+    "defaultPrompt": [
+      "Add a new view to my Joomla 6 component.",
+      "Audit this Joomla extension's controllers for missing access checks.",
+      "Address Joomla deprecations in this extension."
+    ]
+  }
+}

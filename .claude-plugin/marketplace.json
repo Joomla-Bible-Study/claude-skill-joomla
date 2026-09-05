@@ -9,13 +9,13 @@
       "name": "joomla",
       "source": {
         "source": "github",
-        "repo": "Joomla-Bible-Study/claude-skill-joomla",
-        "ref": "v1.1.0"
+        "repo": "Joomla-Bible-Study/joomla-skills",
+        "ref": "v2.0.0"
       },
-      "description": "Joomla 5+ / 6 / 7 extension development skill — components, modules, plugins, libraries, templates with modern MVC, PSR-4 namespaces, DI, and service providers.",
-      "version": "1.1.0",
+      "description": "Joomla 5+ / 6 / 7 skill suite — one reference skill for building extensions (components, modules, plugins, libraries, templates with modern MVC, PSR-4 namespaces, DI, and service providers), twelve non-overlapping security audit workflows (authorisation, controller exposure, object-level access, SQL filtering, XSS, sensitive output, file operations, code execution, SSRF/redirects, secrets/crypto, package surface, _JEXEC guards), plus four maintenance workflows (Joomla deprecations, stable-PHP compatibility, upcoming-PHP compatibility, and Docker-over-HTTP end-to-end tests).",
+      "version": "2.0.0",
       "category": "development",
-      "tags": ["joomla", "joomla5", "joomla6", "joomla7", "php", "cms", "mvc", "extension-development"]
+      "tags": ["joomla", "joomla5", "joomla6", "joomla7", "php", "cms", "mvc", "extension-development", "security", "audit", "testing"]
     }
   ]
 }
