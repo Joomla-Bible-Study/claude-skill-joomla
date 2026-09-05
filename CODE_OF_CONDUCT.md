@@ -17,8 +17,6 @@ The code of conduct applies to all project spaces — issues, pull requests, dis
 
 If you experience or witness behavior that violates the code of conduct, please contact the maintainers privately:
 
-- Email: **skeebrent@gmail.com**
-
 Reports will be reviewed and handled as quickly as practical. Reporters will not be identified to the reported party without consent unless required by law. Maintainers who violate the code of conduct in good standing may be removed from the project.
 
 ## Enforcement
