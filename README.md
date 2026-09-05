@@ -1,9 +1,12 @@
-# Joomla Skills for Claude
+# Joomla Skills
 
-A suite of skills for **Joomla 5+ and Joomla 6** extension work — one broad skill for *building*
+A suite of 17 skills for **Joomla 5+ / 6 / 7** extension work — one broad skill for *building*
 extensions, twelve security audits for *reviewing* them, and four workflows for *maintaining* them.
 
-Works with [Claude Code](https://claude.com/claude-code) (as a plugin) and with [Claude.ai](https://claude.ai) and Claude Desktop (as uploadable Skills).
+Runs in [Claude Code](https://claude.com/claude-code), [Claude.ai](https://claude.ai) and Claude
+Desktop, [Codex](https://developers.openai.com/codex), and Qwen Code — all of which get the full
+suite. Cursor, GitHub Copilot, Windsurf, Cline, and Aider get the extension-development guidance via
+a generated rule-file package. See [Installation](#installation) for the channel matrix.
 
 ## What's in the suite
 
@@ -98,7 +101,7 @@ Reference files in `skills/joomla/references/` provide deep-dive guidance, loade
 
 ## Requirements
 
-- **Joomla:** 5.x or 6.x (target: native 6, backward compatible with 5)
+- **Joomla:** 5.x, 6.x, or 7.x (target: native 6, backward compatible with 5)
 - **PHP:** 8.3+ minimum and supported, 8.4 recommended (Joomla 6.x — see [manual.joomla.org/docs/get-started/technical-requirements](https://manual.joomla.org/docs/get-started/technical-requirements/))
 - **Coding standard:** PSR-12 (PHP), Joomla ESLint config (JavaScript)
 
@@ -251,7 +254,7 @@ A component can pass the first two and still hand back a row the user may not se
 
 ## Project context
 
-This skill is maintained by [Christian Web Ministries](https://christianwebministries.org) (org currently published as `Joomla-Bible-Study` on GitHub) and was developed alongside production Joomla extensions including:
+This suite is maintained by [Christian Web Ministries](https://christianwebministries.org) (org currently published as `Joomla-Bible-Study` on GitHub) and was developed alongside production Joomla extensions including:
 
 - [Proclaim](https://github.com/Joomla-Bible-Study/Proclaim) — Bible study management
 - [CWMScriptureLinks](https://github.com/bcordis/CWMScriptureLinks) — auto-link Scripture references
@@ -264,7 +267,7 @@ Patterns are derived from the [joomla-cms](https://github.com/joomla/joomla-cms)
 Issues and PRs welcome. See **[CONTRIBUTING.md](CONTRIBUTING.md)** for:
 
 - what kinds of contributions are most useful (bug reports, API drift, new patterns/references)
-- how to test changes locally before opening a PR (symlink as a skill, install as a plugin, or upload zip to Claude.ai)
+- how to test changes locally before opening a PR (symlink a skill, install as a plugin, or upload a zip to Claude.ai) — including checking that the *right* skill activates, now that seventeen descriptions compete
 - authoring guidelines for `SKILL.md` and references (frontmatter is load-bearing — be deliberate)
 - versioning, CHANGELOG expectations, and the release flow
 

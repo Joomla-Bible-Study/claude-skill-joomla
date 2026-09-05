@@ -96,8 +96,9 @@ HEADER_AGENTS="$(mktemp)"
 cat > "$HEADER_AGENTS" <<'EOF'
 <!--
 AGENTS.md — universal AI coding agent guidance (https://agents.md)
-Read by: OpenAI Codex, Cursor 1.0+, Aider, Zed, Jules, and a growing list of
-tools. Drop this file at your project root alongside the references/ directory.
+Read by Cursor 1.0+, Aider, Zed, Jules, and a growing list of tools. Drop this
+file at your project root alongside the references/ directory.
+Codex users: prefer the repo's own plugin (all 17 skills) over this file.
 -->
 EOF
 
@@ -151,11 +152,13 @@ emit_target "$OUT/CONVENTIONS.md"                  ""        "$HEADER_AIDER"
 
 # 6. Top-level README explaining how to install each variant.
 cat > "$OUT/README.md" <<'EOF'
-# Joomla Skill — Universal AI Coding Package
+# Joomla Skills — Universal AI Coding Package (extension-development guidance)
 
-Generated from [`Joomla-Bible-Study/joomla-skills`](https://github.com/Joomla-Bible-Study/joomla-skills).
-The canonical source is the Claude Code skill; this package mirrors the same
-content for other AI coding tools.
+Generated from [`Joomla-Bible-Study/joomla-skills`](https://github.com/Joomla-Bible-Study/joomla-skills),
+a suite of 17 skills. This package carries only the `joomla` extension-development
+skill, flattened into rule files for tools without a plugin system — the twelve
+security audits and the maintenance workflows are interactive and do not
+translate to always-on rules.
 
 ## What's in this package
 

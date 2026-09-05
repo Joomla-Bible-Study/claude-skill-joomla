@@ -1,4 +1,4 @@
-# Contributing to the Joomla Skills
+# Contributing to Joomla Skills
 
 Thanks for considering a contribution. These skills are community-maintained and grow whenever someone shares a hard-won Joomla pattern.
 
